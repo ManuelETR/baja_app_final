@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "969707894614",
+    "project_id": "bajaapp-df4b1",
+    "storage_bucket": "bajaapp-df4b1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:969707894614:android:9035ea2044cf11063248f7",
+        "android_client_info": {
+          "package_name": "com.example.baja_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTegVBoA_fncPSpjqPm8g4xLp3WbqNrJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
