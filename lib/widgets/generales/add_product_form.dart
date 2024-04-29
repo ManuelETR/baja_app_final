@@ -17,8 +17,12 @@ class AddProductForm extends StatelessWidget {
     final TextEditingController minQuantityController = TextEditingController();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Agregar nuevo Insumo'),
+      appBar: AppBar(centerTitle: true,
+        backgroundColor: const Color(0xFF053F93),
+        title: const Text(
+          'Agregar Insumo',
+          style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
