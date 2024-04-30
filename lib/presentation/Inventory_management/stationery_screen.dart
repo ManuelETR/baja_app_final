@@ -100,7 +100,7 @@ class _StationeryScreenState extends State<StationeryScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
+            icon: const Icon(Icons.post_add_sharp, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,

@@ -21,11 +21,11 @@ class InsumoTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_circle_outline),
             onPressed: () => _incrementarCantidad(context, insumo),
           ),
           IconButton(
-            icon: const Icon(Icons.remove),
+            icon: const Icon(Icons.remove_circle_outline_outlined),
             onPressed: () => _decrementarCantidad(context, insumo),
           ),
         ],

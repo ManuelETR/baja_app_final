@@ -100,7 +100,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
+            icon: const Icon(Icons.post_add_sharp, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
@@ -132,15 +132,15 @@ class _ProductionScreenState extends State<ProductionScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(Icons.add_circle_outline, color: Color(0xFF053F93)),
                   onPressed: () => _incrementarCantidad(insumo),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.remove),
+                  icon: const Icon(Icons.remove_circle_outline_outlined, color: Color(0xFF053F93)),
                   onPressed: () => _decrementarCantidad(insumo),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete),
+                  icon: const Icon(Icons.delete, color: Color.fromARGB(255, 171, 36, 26)),
                   onPressed: () => _eliminarInsumo(insumo),
                 ),
               ],
