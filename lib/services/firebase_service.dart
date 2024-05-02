@@ -63,15 +63,16 @@ class FirebaseService {
   }
 
    static Future<void> agregarInsumo(String inventoryId, Insumo insumo) async {
-  try {
-    await FirebaseFirestore.instance
-        .collection('Inventarios')
-        .doc(inventoryId)
-        .collection('insumos')
-        .add(insumo.toMap());
-    // Si llegas hasta aquí sin lanzar excepciones, significa que el insumo se agregó correctamente
-  } catch (error) {
-    throw 'Error al agregar el insumo: $error';
+      try {
+        await FirebaseFirestore.instance
+            .collection('Inventarios')
+            .doc(inventoryId)
+            .collection('insumos')
+            .add(insumo.toMap());
+        // Si llegas hasta aquí sin lanzar excepciones, significa que el insumo se agregó correctamente
+      } catch (error) {
+        throw 'Error al agregar el insumo: $error';
   }
+  
 }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:baja_app/presentation/index.dart'; // Importa el formulario para agregar insumos
 import 'package:baja_app/dominio/insumos.dart';
 import 'package:baja_app/services/firebase_service.dart';
+import 'package:baja_app/dominio/notifications/snackbar_history.dart';
+import 'package:baja_app/presentation/index.dart';
 
 class CleaningScreen extends StatefulWidget {
   const CleaningScreen({Key? key}) : super(key: key);
@@ -28,20 +29,28 @@ class _CleaningScreenState extends State<CleaningScreen> {
 
   void _incrementarCantidad(Insumo insumo) async {
     await FirebaseService.incrementarCantidadInsumo('limpieza', insumo.id);
-    // Actualizar el estado local después de la operación de incremento
     setState(() {
       insumo.cantidad++;
     });
+    if (insumo.cantidad <= insumo.cantidadMinima) {
+      String message = 'El insumo ${insumo.nombre} del área de Limpieza llegó a cantidad mínima, debes rellenar el stock.';
+      _showSnackBar(message);
+      SnackBarHistory.addMessage(message);
+    }
   }
 
   void _decrementarCantidad(Insumo insumo) async {
     await FirebaseService.decrementarCantidadInsumo('limpieza', insumo.id);
-    // Actualizar el estado local después de la operación de decremento
     setState(() {
       if (insumo.cantidad > 0) {
         insumo.cantidad--;
       }
     });
+    if (insumo.cantidad <= insumo.cantidadMinima) {
+      String message = 'El insumo ${insumo.nombre} del área de Limpieza llegó a cantidad mínima, debes rellenar el stock.';
+      _showSnackBar(message);
+      SnackBarHistory.addMessage(message);
+    }
   }
 
   void _eliminarInsumo(Insumo insumo) async {
@@ -73,10 +82,17 @@ class _CleaningScreenState extends State<CleaningScreen> {
 
   void _eliminarInsumoConfirmed(Insumo insumo) async {
     await FirebaseService.eliminarInsumo('limpieza', insumo.id);
-    // Actualizar el estado local después de la eliminación del insumo
     setState(() {
       _insumos.removeWhere((element) => element.id == insumo.id);
     });
+  }
+
+  void _showSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 3),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
@@ -85,10 +101,8 @@ class _CleaningScreenState extends State<CleaningScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_outlined),
-          // Cambiar el color de la flecha hacia atrás
-          color: Colors.white, // Cambia este color al que desees
+          color: Colors.white,
           onPressed: () {
-            // Agrega aquí la lógica para volver atrás si es necesario
             Navigator.of(context).pop();
           },
         ),
@@ -100,15 +114,14 @@ class _CleaningScreenState extends State<CleaningScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.post_add_sharp, color: Colors.white),
+            icon: const Icon(Icons.post_add_sharp, color: Colors.white, size: 30),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddProductForm(
-                    inventoryId: 'limpieza', // Asigna el ID de limpieza
+                    inventoryId: 'limpieza',
                     onInsumoAdded: (String nombre, int cantidad, int cantidadMinima) {
-                      // Actualizar la lista de insumos después de agregar uno nuevo
                       _loadInsumos();
                     },
                   ),
@@ -122,27 +135,30 @@ class _CleaningScreenState extends State<CleaningScreen> {
         itemCount: _insumos.length,
         itemBuilder: (context, index) {
           Insumo insumo = _insumos[index];
-          return ListTile(
-            title: Text(insumo.nombre),
-            subtitle: Text(
-              'Cantidad: ${insumo.cantidad}',
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () => _incrementarCantidad(insumo),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  onPressed: () => _decrementarCantidad(insumo),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _eliminarInsumo(insumo),
-                ),
-              ],
+          return Container(
+            color: insumo.cantidad <= insumo.cantidadMinima ? Colors.pink[100] : null,
+            child: ListTile(
+              title: Text(insumo.nombre),
+              subtitle: Text(
+                'Cantidad: ${insumo.cantidad}',
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline, color: Color(0xFF053F93)),
+                    onPressed: () => _incrementarCantidad(insumo),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline_outlined, color: Color(0xFF053F93)),
+                    onPressed: () => _decrementarCantidad(insumo),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Color.fromARGB(255, 171, 36, 26)),
+                    onPressed: () => _eliminarInsumo(insumo),
+                  ),
+                ],
+              ),
             ),
           );
         },

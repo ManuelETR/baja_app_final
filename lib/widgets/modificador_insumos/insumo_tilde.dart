@@ -7,10 +7,10 @@ class InsumoTile extends StatelessWidget {
   final Insumo insumo;
 
   const InsumoTile({
-    Key? key,
+    super.key,
     required this.inventoryId,
-    required this.insumo,
-  }) : super(key: key);
+    required this.insumo, required void Function(Insumo insumo) onIncrementar, required void Function(Insumo insumo) onDecrementar, required void Function(Insumo insumo) onEliminar,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +41,7 @@ class InsumoTile extends StatelessWidget {
     try {
       await InsumoFunctions.actualizarCantidadInsumo(context, inventoryId, insumo);
     } catch (error) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al actualizar la cantidad: $error'),
@@ -59,6 +60,7 @@ class InsumoTile extends StatelessWidget {
       try {
         await InsumoFunctions.actualizarCantidadInsumo(context, inventoryId, insumo);
       } catch (error) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al actualizar la cantidad: $error'),

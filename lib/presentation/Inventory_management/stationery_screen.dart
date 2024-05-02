@@ -1,7 +1,8 @@
-import 'package:baja_app/presentation/index.dart';
 import 'package:flutter/material.dart';
 import 'package:baja_app/dominio/insumos.dart';
 import 'package:baja_app/services/firebase_service.dart';
+import 'package:baja_app/dominio/notifications/snackbar_history.dart';
+import 'package:baja_app/presentation/index.dart';
 
 class StationeryScreen extends StatefulWidget {
   const StationeryScreen({Key? key}) : super(key: key);
@@ -28,20 +29,28 @@ class _StationeryScreenState extends State<StationeryScreen> {
 
   void _incrementarCantidad(Insumo insumo) async {
     await FirebaseService.incrementarCantidadInsumo('papeleria', insumo.id);
-    // Actualizar el estado local después de la operación de incremento
     setState(() {
       insumo.cantidad++;
     });
+    if (insumo.cantidad <= insumo.cantidadMinima) {
+      String message = 'El insumo ${insumo.nombre} del área de Papelería llegó a cantidad mínima, debes rellenar el stock.';
+      _showSnackBar(message);
+      SnackBarHistory.addMessage(message);
+    }
   }
 
   void _decrementarCantidad(Insumo insumo) async {
     await FirebaseService.decrementarCantidadInsumo('papeleria', insumo.id);
-    // Actualizar el estado local después de la operación de decremento
     setState(() {
       if (insumo.cantidad > 0) {
         insumo.cantidad--;
       }
     });
+    if (insumo.cantidad <= insumo.cantidadMinima) {
+      String message = 'El insumo ${insumo.nombre} del área de Papelería llegó a cantidad mínima, debes rellenar el stock.';
+      _showSnackBar(message);
+      SnackBarHistory.addMessage(message);
+    }
   }
 
   void _eliminarInsumo(Insumo insumo) async {
@@ -49,21 +58,21 @@ class _StationeryScreenState extends State<StationeryScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Eliminar Insumo'),
+          title: const Text('Eliminar Insumo'),
           content: Text('¿Estás seguro de que deseas eliminar ${insumo.nombre}?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Cerrar el diálogo
               },
-              child: Text('No'),
+              child: const Text('No'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Cerrar el diálogo
                 _eliminarInsumoConfirmed(insumo); // Llamar al método de eliminación confirmado
               },
-              child: Text('Sí'),
+              child: const Text('Sí'),
             ),
           ],
         );
@@ -73,10 +82,17 @@ class _StationeryScreenState extends State<StationeryScreen> {
 
   void _eliminarInsumoConfirmed(Insumo insumo) async {
     await FirebaseService.eliminarInsumo('papeleria', insumo.id);
-    // Actualizar el estado local después de la eliminación del insumo
     setState(() {
       _insumos.removeWhere((element) => element.id == insumo.id);
     });
+  }
+
+  void _showSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 3),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
@@ -85,10 +101,8 @@ class _StationeryScreenState extends State<StationeryScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_outlined),
-          // Cambiar el color de la flecha hacia atrás
-          color: Colors.white, // Cambia este color al que desees
+          color: Colors.white,
           onPressed: () {
-            // Agrega aquí la lógica para volver atrás si es necesario
             Navigator.of(context).pop();
           },
         ),
@@ -100,17 +114,18 @@ class _StationeryScreenState extends State<StationeryScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.post_add_sharp, color: Colors.white),
+            icon: const Icon(Icons.post_add_sharp, color: Colors.white, size: 30),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AddProductForm(
-                  inventoryId: 'papeleria',
-                  onInsumoAdded: (String nombre, int cantidad, int cantidadMinima) {
-                    // Actualizar la lista de insumos después de agregar uno nuevo
-                    _loadInsumos();
-                  },
-                )),
+                MaterialPageRoute(
+                  builder: (context) => AddProductForm(
+                    inventoryId: 'papeleria',
+                    onInsumoAdded: (String nombre, int cantidad, int cantidadMinima) {
+                      _loadInsumos();
+                    },
+                  ),
+                ),
               );
             },
           ),
@@ -120,27 +135,30 @@ class _StationeryScreenState extends State<StationeryScreen> {
         itemCount: _insumos.length,
         itemBuilder: (context, index) {
           Insumo insumo = _insumos[index];
-          return ListTile(
-            title: Text(insumo.nombre),
-            subtitle: Text(
-              'Cantidad: ${insumo.cantidad}',
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () => _incrementarCantidad(insumo),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  onPressed: () => _decrementarCantidad(insumo),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _eliminarInsumo(insumo),
-                ),
-              ],
+          return Container(
+            color: insumo.cantidad <= insumo.cantidadMinima ? Colors.pink[100] : null,
+            child: ListTile(
+              title: Text(insumo.nombre),
+              subtitle: Text(
+                'Cantidad: ${insumo.cantidad}',
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline, color: Color(0xFF053F93)),
+                    onPressed: () => _incrementarCantidad(insumo),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline_outlined, color: Color(0xFF053F93)),
+                    onPressed: () => _decrementarCantidad(insumo),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Color.fromARGB(255, 171, 36, 26)),
+                    onPressed: () => _eliminarInsumo(insumo),
+                  ),
+                ],
+              ),
             ),
           );
         },
