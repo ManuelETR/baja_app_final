@@ -1,8 +1,9 @@
-import 'package:baja_app/dominio/notifications/snackbar_history.dart';
 import 'package:flutter/material.dart';
 import 'package:baja_app/dominio/insumos.dart';
 import 'package:baja_app/services/firebase_service.dart';
-import 'package:baja_app/presentation/index.dart'; // Importa el formulario para agregar insumos
+import 'package:baja_app/presentation/index.dart';
+import 'package:intl/intl.dart';
+import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 
 class ProductionScreen extends StatefulWidget {
   const ProductionScreen({Key? key}) : super(key: key);
@@ -41,7 +42,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
         backgroundColor: const Color(0xFF053F93),
         title: const Text(
           'Insumos de Producción',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: [
           IconButton(
@@ -69,8 +70,19 @@ class _ProductionScreenState extends State<ProductionScreen> {
           return Container(
             color: insumo.cantidad <= insumo.cantidadMinima ? Colors.pink[100] : null,
             child: ListTile(
-              title: Text(insumo.nombre),
-              subtitle: Text('Cantidad: ${insumo.cantidad}'),
+              title: Text(
+                insumo.nombre,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: insumo.cantidad <= insumo.cantidadMinima ? Colors.red : null,
+                ),
+              ),
+              subtitle: Text(
+                'Cantidad: ${insumo.cantidad}',
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -95,19 +107,22 @@ class _ProductionScreenState extends State<ProductionScreen> {
     );
   }
 
-  void _incrementarCantidad(Insumo insumo) async {
+    void _incrementarCantidad(Insumo insumo) async {
+    BuildContext? contextRef = context;
     await FirebaseService.incrementarCantidadInsumo('produccion', insumo.id);
     setState(() {
       insumo.cantidad++;
     });
     if (insumo.cantidad <= insumo.cantidadMinima) {
-      String message = 'El insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock.';
-      _showSnackBar(message);
-      SnackBarHistory.addMessage(message);
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      SnackbarUtils.showSnackbar(contextRef, message);
     }
   }
 
   void _decrementarCantidad(Insumo insumo) async {
+    BuildContext? contextRef = context;
     await FirebaseService.decrementarCantidadInsumo('produccion', insumo.id);
     setState(() {
       if (insumo.cantidad > 0) {
@@ -115,9 +130,10 @@ class _ProductionScreenState extends State<ProductionScreen> {
       }
     });
     if (insumo.cantidad <= insumo.cantidadMinima) {
-      String message = 'El insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock.';
-      _showSnackBar(message);
-      SnackBarHistory.addMessage(message);
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      SnackbarUtils.showSnackbar(contextRef, message);
     }
   }
 
@@ -126,13 +142,5 @@ class _ProductionScreenState extends State<ProductionScreen> {
     setState(() {
       _insumos.removeWhere((element) => element.id == insumo.id);
     });
-  }
-
-  void _showSnackBar(String message) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 3),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

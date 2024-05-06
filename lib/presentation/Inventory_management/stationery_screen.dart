@@ -1,8 +1,9 @@
+import 'package:baja_app/presentation/index.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:baja_app/dominio/insumos.dart';
 import 'package:baja_app/services/firebase_service.dart';
-import 'package:baja_app/dominio/notifications/snackbar_history.dart';
-import 'package:baja_app/presentation/index.dart';
+import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 
 class StationeryScreen extends StatefulWidget {
   const StationeryScreen({Key? key}) : super(key: key);
@@ -33,9 +34,10 @@ class _StationeryScreenState extends State<StationeryScreen> {
       insumo.cantidad++;
     });
     if (insumo.cantidad <= insumo.cantidadMinima) {
-      String message = 'El insumo ${insumo.nombre} del área de Papelería llegó a cantidad mínima, debes rellenar el stock.';
-      _showSnackBar(message);
-      SnackBarHistory.addMessage(message);
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      SnackbarUtils.showSnackbar(context, message);
     }
   }
 
@@ -47,9 +49,10 @@ class _StationeryScreenState extends State<StationeryScreen> {
       }
     });
     if (insumo.cantidad <= insumo.cantidadMinima) {
-      String message = 'El insumo ${insumo.nombre} del área de Papelería llegó a cantidad mínima, debes rellenar el stock.';
-      _showSnackBar(message);
-      SnackBarHistory.addMessage(message);
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      SnackbarUtils.showSnackbar(context, message);
     }
   }
 
@@ -138,7 +141,13 @@ class _StationeryScreenState extends State<StationeryScreen> {
           return Container(
             color: insumo.cantidad <= insumo.cantidadMinima ? Colors.pink[100] : null,
             child: ListTile(
-              title: Text(insumo.nombre),
+              title: Text(
+                insumo.nombre,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: insumo.cantidad <= insumo.cantidadMinima ? Colors.red : null,
+                ),
+              ),
               subtitle: Text(
                 'Cantidad: ${insumo.cantidad}',
               ),

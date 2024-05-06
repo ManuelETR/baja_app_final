@@ -1,8 +1,9 @@
+import 'package:baja_app/presentation/index.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:baja_app/dominio/insumos.dart';
 import 'package:baja_app/services/firebase_service.dart';
-import 'package:baja_app/dominio/notifications/snackbar_history.dart';
-import 'package:baja_app/presentation/index.dart';
+import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 
 class CleaningScreen extends StatefulWidget {
   const CleaningScreen({Key? key}) : super(key: key);
@@ -33,9 +34,10 @@ class _CleaningScreenState extends State<CleaningScreen> {
       insumo.cantidad++;
     });
     if (insumo.cantidad <= insumo.cantidadMinima) {
-      String message = 'El insumo ${insumo.nombre} del área de Limpieza llegó a cantidad mínima, debes rellenar el stock.';
-      _showSnackBar(message);
-      SnackBarHistory.addMessage(message);
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      SnackbarUtils.showSnackbar(context, message);
     }
   }
 
@@ -47,52 +49,18 @@ class _CleaningScreenState extends State<CleaningScreen> {
       }
     });
     if (insumo.cantidad <= insumo.cantidadMinima) {
-      String message = 'El insumo ${insumo.nombre} del área de Limpieza llegó a cantidad mínima, debes rellenar el stock.';
-      _showSnackBar(message);
-      SnackBarHistory.addMessage(message);
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      SnackbarUtils.showSnackbar(context, message);
     }
   }
 
   void _eliminarInsumo(Insumo insumo) async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Eliminar Insumo'),
-          content: Text('¿Estás seguro de que deseas eliminar ${insumo.nombre}?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-                _eliminarInsumoConfirmed(insumo); // Llamar al método de eliminación confirmado
-              },
-              child: const Text('Sí'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _eliminarInsumoConfirmed(Insumo insumo) async {
     await FirebaseService.eliminarInsumo('limpieza', insumo.id);
     setState(() {
       _insumos.removeWhere((element) => element.id == insumo.id);
     });
-  }
-
-  void _showSnackBar(String message) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 3),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
@@ -138,7 +106,13 @@ class _CleaningScreenState extends State<CleaningScreen> {
           return Container(
             color: insumo.cantidad <= insumo.cantidadMinima ? Colors.pink[100] : null,
             child: ListTile(
-              title: Text(insumo.nombre),
+              title: Text(
+                insumo.nombre,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: insumo.cantidad <= insumo.cantidadMinima ? Colors.red : null,
+                ),
+              ),
               subtitle: Text(
                 'Cantidad: ${insumo.cantidad}',
               ),

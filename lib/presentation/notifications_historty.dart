@@ -1,5 +1,5 @@
-import 'package:baja_app/dominio/notifications/snackbar_history.dart';
 import 'package:flutter/material.dart';
+import 'package:baja_app/dominio/notifications/snackbar_history.dart'; // Importa la clase SnackBarHistory
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({Key? key}) : super(key: key);
@@ -14,7 +14,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-    messages = SnackBarHistory.getMessages();
+    _loadMessages();
+  }
+
+  void _loadMessages() async {
+    final messages = await SnackBarHistory.getMessages(); // Utiliza el método getMessages de SnackBarHistory
+    setState(() {
+      this.messages = messages;
+    });
   }
 
   @override
@@ -44,17 +51,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: ListView.builder(
         itemCount: messages.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(messages[index]),
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.all(8.0),
+              child: Text(messages[index]),
+            ),
           );
         },
       ),
     );
   }
 
-  void _clearMessages() {
+  void _clearMessages() async {
+    await SnackBarHistory.clearMessages(); // Utiliza el método clearMessages de SnackBarHistory
     setState(() {
-      SnackBarHistory.clearMessages();
       messages = [];
     });
   }
