@@ -6,9 +6,10 @@ import 'package:baja_app/services/firebase_service.dart';
 import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 
 class CleaningScreen extends StatefulWidget {
-  const CleaningScreen({Key? key}) : super(key: key);
+  const CleaningScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _CleaningScreenState createState() => _CleaningScreenState();
 }
 
@@ -37,6 +38,7 @@ class _CleaningScreenState extends State<CleaningScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
   }
@@ -52,6 +54,7 @@ class _CleaningScreenState extends State<CleaningScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
   }

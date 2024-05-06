@@ -6,9 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 
 class ProductionScreen extends StatefulWidget {
-  const ProductionScreen({Key? key}) : super(key: key);
+  const ProductionScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _ProductionScreenState createState() => _ProductionScreenState();
 }
 
@@ -79,7 +80,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
               ),
               subtitle: Text(
                 'Cantidad: ${insumo.cantidad}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -117,6 +118,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(contextRef, message);
     }
   }
@@ -133,6 +135,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(contextRef, message);
     }
   }

@@ -6,9 +6,10 @@ import 'package:baja_app/services/firebase_service.dart';
 import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 
 class StationeryScreen extends StatefulWidget {
-  const StationeryScreen({Key? key}) : super(key: key);
+  const StationeryScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _StationeryScreenState createState() => _StationeryScreenState();
 }
 
@@ -37,6 +38,7 @@ class _StationeryScreenState extends State<StationeryScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
   }
@@ -52,6 +54,7 @@ class _StationeryScreenState extends State<StationeryScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
   }
@@ -90,10 +93,10 @@ class _StationeryScreenState extends State<StationeryScreen> {
     });
   }
 
-  void _showSnackBar(String message) {
+  void showSnackBar(String message) {
     final snackBar = SnackBar(
       content: Text(message),
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 5),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }

@@ -68,6 +68,33 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _clearMessages() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Borrar Historial'),
+          content: const Text('¿Quieres borrar todo el historial de mensajes?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () {
+                _confirmClearMessages();
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmClearMessages() async {
     await SnackBarHistory.clearMessages(); // Utiliza el método clearMessages de SnackBarHistory
     setState(() {
       messages = [];
