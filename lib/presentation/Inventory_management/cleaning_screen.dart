@@ -37,7 +37,7 @@ class _CleaningScreenState extends State<CleaningScreen> {
     if (insumo.cantidad <= insumo.cantidadMinima) {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      String message = 'Insumo ${insumo.nombre} del área de Limpieza llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
       // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
@@ -53,7 +53,7 @@ class _CleaningScreenState extends State<CleaningScreen> {
     if (insumo.cantidad <= insumo.cantidadMinima) {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      String message = 'Insumo ${insumo.nombre} del área de Limpieza llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
       // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
@@ -118,6 +118,9 @@ class _CleaningScreenState extends State<CleaningScreen> {
               ),
               subtitle: Text(
                 'Cantidad: ${insumo.cantidad}',
+                style: const TextStyle(
+                  fontStyle: FontStyle.italic
+                ),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,

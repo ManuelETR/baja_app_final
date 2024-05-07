@@ -37,7 +37,7 @@ class _StationeryScreenState extends State<StationeryScreen> {
     if (insumo.cantidad <= insumo.cantidadMinima) {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      String message = 'Insumo ${insumo.nombre} del área de Papelería llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
       // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
@@ -53,7 +53,7 @@ class _StationeryScreenState extends State<StationeryScreen> {
     if (insumo.cantidad <= insumo.cantidadMinima) {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-      String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      String message = 'Insumo ${insumo.nombre} del área de Papelería llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
       // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
@@ -153,6 +153,9 @@ class _StationeryScreenState extends State<StationeryScreen> {
               ),
               subtitle: Text(
                 'Cantidad: ${insumo.cantidad}',
+                style: const TextStyle(
+                  fontStyle: FontStyle.italic
+                ),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
