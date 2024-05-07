@@ -24,7 +24,7 @@ class ProfileScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.home),
         onPressed: () {
-          Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
         },
       ),
     );

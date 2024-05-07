@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:baja_app/dominio/notifications/snackbar_history.dart'; // Importa la clase SnackBarHistory
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({Key? key}) : super(key: key);
+  const NotificationsScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _NotificationsScreenState createState() => _NotificationsScreenState();
 }
 

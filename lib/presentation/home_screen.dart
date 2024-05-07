@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class HomeScreen extends StatelessWidget {
   // ignore: use_key_in_widget_constructors
@@ -13,6 +14,41 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.logout),
         onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Cerrar sesión'),
+                content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(false); // Cerrar el diálogo
+                    },
+                    child: const Text('No'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(true); // Cerrar el diálogo y confirmar la acción
+                    },
+                    child: const Text('Sí'),
+                  ),
+                ],
+              );
+            },
+          ).then((value) async {
+            if (value != null && value) {
+              // Cerrar sesión con Firebase Auth
+              await FirebaseAuth.instance.signOut();
+              // Cerrar sesión con Google si el usuario inició sesión con Google
+              final GoogleSignIn googleSignIn = GoogleSignIn();
+              if (await googleSignIn.isSignedIn()) {
+                await googleSignIn.signOut();
+              }
+              // Redirigir a la pantalla de inicio de sesión
+              Navigator.pushReplacementNamed(context, '/');
+            }
+          });
         },
       ),
     );
@@ -65,7 +101,7 @@ class _ButtonSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40),
+      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
