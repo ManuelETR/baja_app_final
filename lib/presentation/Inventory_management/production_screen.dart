@@ -1,15 +1,16 @@
+import 'package:baja_app/presentation/index.dart';
 import 'package:flutter/material.dart';
 import 'package:baja_app/dominio/insumos.dart';
 import 'package:baja_app/services/firebase_service.dart';
-import 'package:baja_app/presentation/index.dart';
 import 'package:intl/intl.dart';
 import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
+import 'package:baja_app/widgets/pedido/order_button.dart';
+import 'package:baja_app/presentation/Inventory_management/order/insumo_selection_screen.dart';
 
 class ProductionScreen extends StatefulWidget {
-  const ProductionScreen({super.key});
+  const ProductionScreen({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _ProductionScreenState createState() => _ProductionScreenState();
 }
 
@@ -53,7 +54,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddProductForm(
-                    inventoryId: 'produccion',
+                    inventoryId: 'produccion', // Cambiado a 'produccion'
                     onInsumoAdded: (String nombre, int cantidad, int cantidadMinima) {
                       _loadInsumos();
                     },
@@ -105,11 +106,15 @@ class _ProductionScreenState extends State<ProductionScreen> {
           );
         },
       ),
+      floatingActionButton: OrderButton(
+        onPressed: () {
+          _navigateToInsumoSelectionScreen();
+        },
+      ),
     );
   }
 
-    void _incrementarCantidad(Insumo insumo) async {
-    BuildContext? contextRef = context;
+  void _incrementarCantidad(Insumo insumo) async {
     await FirebaseService.incrementarCantidadInsumo('produccion', insumo.id);
     setState(() {
       insumo.cantidad++;
@@ -118,13 +123,11 @@ class _ProductionScreenState extends State<ProductionScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
-      // ignore: use_build_context_synchronously
-      SnackbarUtils.showSnackbar(contextRef, message);
+      SnackbarUtils.showSnackbar(context, message);
     }
   }
 
   void _decrementarCantidad(Insumo insumo) async {
-    BuildContext? contextRef = context;
     await FirebaseService.decrementarCantidadInsumo('produccion', insumo.id);
     setState(() {
       if (insumo.cantidad > 0) {
@@ -135,8 +138,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
-      // ignore: use_build_context_synchronously
-      SnackbarUtils.showSnackbar(contextRef, message);
+      SnackbarUtils.showSnackbar(context, message);
     }
   }
 
@@ -145,5 +147,19 @@ class _ProductionScreenState extends State<ProductionScreen> {
     setState(() {
       _insumos.removeWhere((element) => element.id == insumo.id);
     });
+  }
+
+  void _navigateToInsumoSelectionScreen() async {
+    final List<Insumo>? selectedInsumos = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => InsumoSelectionScreen(insumos: _insumos),
+      ),
+    );
+
+    if (selectedInsumos != null) {
+      // Aquí puedes manejar los insumos seleccionados
+      print('Insumos seleccionados: $selectedInsumos');
+    }
   }
 }

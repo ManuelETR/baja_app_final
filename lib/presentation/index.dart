@@ -12,3 +12,4 @@ export 'package:baja_app/widgets/generales/add_product_form.dart';
 export 'package:baja_app/presentation/login/login.dart';
 export 'package:baja_app/presentation/login/sign.dart';
 export 'package:baja_app/features/app/splash_screen/splash_screen.dart';
+export 'package:baja_app/presentation/Inventory_management/order/insumo_selection_screen.dart';
