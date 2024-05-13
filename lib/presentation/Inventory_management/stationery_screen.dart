@@ -1,4 +1,5 @@
 import 'package:baja_app/presentation/index.dart';
+import 'package:baja_app/widgets/pedido/order_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:baja_app/dominio/insumos.dart';
@@ -6,10 +7,9 @@ import 'package:baja_app/services/firebase_service.dart';
 import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 
 class StationeryScreen extends StatefulWidget {
-  const StationeryScreen({super.key});
+  const StationeryScreen({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _StationeryScreenState createState() => _StationeryScreenState();
 }
 
@@ -93,12 +93,18 @@ class _StationeryScreenState extends State<StationeryScreen> {
     });
   }
 
-  void showSnackBar(String message) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 5),
+  void _navigateToInsumoSelectionScreen() async {
+    final List<Insumo>? selectedInsumos = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => InsumoSelectionScreen(insumos: _insumos),
+      ),
     );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    if (selectedInsumos != null) {
+      // Aquí puedes manejar los insumos seleccionados
+      print('Insumos seleccionados: $selectedInsumos');
+    }
   }
 
   @override
@@ -177,6 +183,9 @@ class _StationeryScreenState extends State<StationeryScreen> {
             ),
           );
         },
+      ),
+      floatingActionButton: OrderButton(
+        onPressed: _navigateToInsumoSelectionScreen,
       ),
     );
   }

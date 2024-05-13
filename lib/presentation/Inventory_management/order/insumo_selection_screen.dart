@@ -1,3 +1,4 @@
+import 'package:baja_app/dominio/pedidos/pedido_history.dart';
 import 'package:flutter/material.dart';
 import 'package:baja_app/dominio/insumos.dart';
 
@@ -43,9 +44,7 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
-            onPressed: () {
-              _revisarOrden();
-            },
+            onPressed: _revisarOrden,
           ),
         ],
       ),
@@ -89,12 +88,12 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
                         },
                       ),
                       SizedBox(
-                        width: 60, // Ajusta el ancho del TextFormField según sea necesario
+                        width: 60,
                         child: TextFormField(
                           controller: controller,
                           decoration: const InputDecoration(
                             border: UnderlineInputBorder(),
-                            hintText: '', // No muestra el 0 inicial
+                            hintText: '',
                           ),
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
@@ -135,6 +134,8 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
       }
     });
 
+    String resumenOrden = _generarResumenOrden();
+    print('Resumen de la orden: $resumenOrden');
     showDialog(
       context: context,
       builder: (context) {
@@ -145,6 +146,7 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Nombre del Pedido: $_nombrePedido'),
+              Text('ID del Pedido: $_pedidoId'),
               const SizedBox(height: 10),
               ..._selectedInsumos.entries.map((entry) {
                 return Text('${entry.key.nombre}: ${entry.value}');
@@ -154,24 +156,12 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                // Limpiar los valores de los controladores de texto
-                _textEditingControllerMap.values.forEach((controller) {
-                  controller.clear();
-                });
-                setState(() {
-                  _nombrePedido = '';
-                });
                 Navigator.pop(context);
               },
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
-              onPressed: () {
-                // Aquí puedes manejar la acción de finalizar el pedido
-                // ...
-                _finalizarPedido();
-                Navigator.pop(context);
-              },
+              onPressed: _finalizarPedido,
               child: const Text('Confirmar Pedido'),
             ),
           ],
@@ -181,6 +171,40 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
   }
 
   void _finalizarPedido() {
-    // Aquí puedes finalizar el pedido
+    // Generar el resumen del pedido
+    String resumenOrden = _generarResumenOrden();
+    
+    // Agregar el pedido al historial
+    PedidoHistory.addPedido(resumenOrden);
+
+    // Cerrar el diálogo de resumen
+    Navigator.pop(context);
+
+    // Limpiar los valores de los controladores de texto
+    _textEditingControllerMap.values.forEach((controller) {
+      controller.clear();
+    });
+
+    // Reiniciar el nombre del pedido
+    setState(() {
+      _nombrePedido = '';
+    });
+
+    // Volver a la pantalla anterior a InsumoSelectionScreen
+    Navigator.pop(context);
+  }
+
+  String _generarResumenOrden() {
+    // Generar el resumen de la orden
+    String resumen = 'Nombre del Pedido: $_nombrePedido\n';
+    resumen += 'ID del Pedido: $_pedidoId\n';
+    // Agregar los insumos y cantidades seleccionadas
+    _textEditingControllerMap.forEach((insumo, controller) {
+      int cantidad = int.tryParse(controller.text) ?? 0;
+      if (cantidad > 0) {
+        resumen += '${insumo.nombre}: $cantidad\n';
+      }
+    });
+    return resumen;
   }
 }

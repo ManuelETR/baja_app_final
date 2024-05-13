@@ -1,4 +1,5 @@
 import 'package:baja_app/presentation/index.dart';
+import 'package:baja_app/widgets/pedido/order_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:baja_app/dominio/insumos.dart';
@@ -6,10 +7,9 @@ import 'package:baja_app/services/firebase_service.dart';
 import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 
 class CleaningScreen extends StatefulWidget {
-  const CleaningScreen({super.key});
+  const CleaningScreen({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _CleaningScreenState createState() => _CleaningScreenState();
 }
 
@@ -38,7 +38,6 @@ class _CleaningScreenState extends State<CleaningScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Limpieza llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
-      // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
   }
@@ -54,16 +53,56 @@ class _CleaningScreenState extends State<CleaningScreen> {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
       String message = 'Insumo ${insumo.nombre} del área de Limpieza llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
-      // ignore: use_build_context_synchronously
       SnackbarUtils.showSnackbar(context, message);
     }
   }
 
   void _eliminarInsumo(Insumo insumo) async {
-    await FirebaseService.eliminarInsumo('limpieza', insumo.id);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Eliminar Insumo'),
+          content: Text('¿Estás seguro de que deseas eliminar ${insumo.nombre}?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+                _eliminarInsumoConfirmed(insumo); // Llamar al método de eliminación confirmado
+              },
+              child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _eliminarInsumoConfirmed(Insumo insumo) async {
+    await FirebaseService.eliminarInsumo('produccion', insumo.id);
     setState(() {
       _insumos.removeWhere((element) => element.id == insumo.id);
     });
+  }
+
+  void _navigateToInsumoSelectionScreen() async {
+    final List<Insumo>? selectedInsumos = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => InsumoSelectionScreen(insumos: _insumos),
+      ),
+    );
+
+    if (selectedInsumos != null) {
+      // Aquí puedes manejar los insumos seleccionados
+      print('Insumos seleccionados: $selectedInsumos');
+    }
   }
 
   @override
@@ -142,6 +181,9 @@ class _CleaningScreenState extends State<CleaningScreen> {
             ),
           );
         },
+      ),
+      floatingActionButton: OrderButton(
+        onPressed: _navigateToInsumoSelectionScreen,
       ),
     );
   }

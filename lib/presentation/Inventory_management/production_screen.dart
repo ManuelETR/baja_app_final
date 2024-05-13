@@ -142,7 +142,34 @@ class _ProductionScreenState extends State<ProductionScreen> {
     }
   }
 
-  void _eliminarInsumo(Insumo insumo) async {
+   void _eliminarInsumo(Insumo insumo) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Eliminar Insumo'),
+          content: Text('¿Estás seguro de que deseas eliminar ${insumo.nombre}?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+                _eliminarInsumoConfirmed(insumo); // Llamar al método de eliminación confirmado
+              },
+              child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _eliminarInsumoConfirmed(Insumo insumo) async {
     await FirebaseService.eliminarInsumo('produccion', insumo.id);
     setState(() {
       _insumos.removeWhere((element) => element.id == insumo.id);
