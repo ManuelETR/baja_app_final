@@ -46,6 +46,7 @@ class HomeScreen extends StatelessWidget {
                 await googleSignIn.signOut();
               }
               // Redirigir a la pantalla de inicio de sesión
+              // ignore: use_build_context_synchronously
               Navigator.pushReplacementNamed(context, '/');
             }
           });

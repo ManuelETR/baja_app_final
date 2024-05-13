@@ -184,6 +184,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (user != null) {
       showToast(message: "User is successfully signed in");
+      // ignore: use_build_context_synchronously
       Navigator.pushReplacementNamed(context, "/home");
     } else {
       showToast(message: "some error occured");

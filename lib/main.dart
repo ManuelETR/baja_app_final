@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         onInsumoAdded: onInsumoAdded,
       );
     },
-    '/order': (context) => const InsumoSelectionScreen(insumos: []),
+    '/order': (context) => InsumoSelectionScreen(insumos: const [], updateParentScreen: () {  }),
   };
 
   @override

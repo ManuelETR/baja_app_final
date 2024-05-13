@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:baja_app/dominio/pedidos/pedido_history.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({Key? key}) : super(key: key);
+  const ActivityScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _ActivityScreenState createState() => _ActivityScreenState();
 }
 
@@ -61,7 +62,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 );
               },
             )
-          : Center(
+          : const Center(
               child: Text('No hay pedidos'),
             ),
     );

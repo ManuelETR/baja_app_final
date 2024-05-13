@@ -1,13 +1,17 @@
 import 'package:baja_app/dominio/pedidos/pedido_history.dart';
+import 'package:baja_app/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:baja_app/dominio/insumos.dart';
+import 'package:intl/intl.dart';
 
 class InsumoSelectionScreen extends StatefulWidget {
   final List<Insumo> insumos;
+  final Function() updateParentScreen;
 
-  const InsumoSelectionScreen({Key? key, required this.insumos}) : super(key: key);
+  const InsumoSelectionScreen({super.key, required this.insumos, required this.updateParentScreen});
 
   @override
+  // ignore: library_private_types_in_public_api
   _InsumoSelectionScreenState createState() => _InsumoSelectionScreenState();
 }
 
@@ -15,6 +19,7 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
   final Map<Insumo, TextEditingController> _textEditingControllerMap = {};
   late int _pedidoId;
   late String _nombrePedido = '';
+  String _selectedArea = 'Producción'; // Valor predeterminado del área seleccionada
 
   @override
   void initState() {
@@ -54,7 +59,7 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextFormField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Nombre del Pedido',
                 hintText: 'Introduce un nombre para el pedido',
               ),
@@ -63,6 +68,23 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
                   _nombrePedido = value;
                 });
               },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: DropdownButton<String>(
+              value: _selectedArea,
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedArea = newValue!;
+                });
+              },
+              items: ['Producción', 'Papelería', 'Limpieza'].map((area) {
+                return DropdownMenuItem<String>(
+                  value: area,
+                  child: Text(area),
+                );
+              }).toList(),
             ),
           ),
           Expanded(
@@ -126,16 +148,15 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
   }
 
   void _revisarOrden() {
-    Map<Insumo, int> _selectedInsumos = {};
+    Map<Insumo, int> selectedInsumos = {};
     _textEditingControllerMap.forEach((insumo, controller) {
       int cantidad = int.tryParse(controller.text) ?? 0;
       if (cantidad > 0) {
-        _selectedInsumos[insumo] = cantidad;
+        selectedInsumos[insumo] = cantidad;
       }
     });
 
-    String resumenOrden = _generarResumenOrden();
-    print('Resumen de la orden: $resumenOrden');
+    print('Resumen de la orden: ${_generarResumenOrden()}');
     showDialog(
       context: context,
       builder: (context) {
@@ -148,9 +169,9 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
               Text('Nombre del Pedido: $_nombrePedido'),
               Text('ID del Pedido: $_pedidoId'),
               const SizedBox(height: 10),
-              ..._selectedInsumos.entries.map((entry) {
+              ...selectedInsumos.entries.map((entry) {
                 return Text('${entry.key.nombre}: ${entry.value}');
-              }).toList(),
+              }),
             ],
           ),
           actions: [
@@ -170,41 +191,70 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
     );
   }
 
-  void _finalizarPedido() {
-    // Generar el resumen del pedido
-    String resumenOrden = _generarResumenOrden();
-    
-    // Agregar el pedido al historial
-    PedidoHistory.addPedido(resumenOrden);
+void _finalizarPedido() async {
+  String areaSeleccionada = _selectedArea.toLowerCase(); // Convertir a minúsculas y quitar diacríticos
+  areaSeleccionada = quitarDiacriticos(areaSeleccionada);
+  // Actualizar las cantidades de los insumos seleccionados en Firestore
+  _textEditingControllerMap.forEach((insumo, controller) async {
+    int cantidadSeleccionada = int.tryParse(controller.text) ?? 0;
+    if (cantidadSeleccionada != 0) {
+      int nuevaCantidad = insumo.cantidad - cantidadSeleccionada; // Restar la cantidad seleccionada
+      // Actualizar la cantidad en Firestore con el nombre del área ajustado
+      await FirebaseService.actualizarCantidadInsumo(areaSeleccionada, insumo.id, nuevaCantidad);
+    }
+  });
+  // Agregar el pedido al historial
+  PedidoHistory.addPedido(_generarResumenOrden());
 
-    // Cerrar el diálogo de resumen
-    Navigator.pop(context);
+  // Llamar a la función de actualización de la pantalla anterior
+  widget.updateParentScreen();
 
-    // Limpiar los valores de los controladores de texto
-    _textEditingControllerMap.values.forEach((controller) {
-      controller.clear();
-    });
+  // Cerrar el diálogo de resumen
+  Navigator.pop(context);
 
-    // Reiniciar el nombre del pedido
-    setState(() {
-      _nombrePedido = '';
-    });
+  // Limpiar los valores de los controladores de texto
+  _textEditingControllerMap.values.forEach((controller) {
+    controller.clear();
+  });
 
-    // Volver a la pantalla anterior a InsumoSelectionScreen
-    Navigator.pop(context);
-  }
+  // Reiniciar el nombre del pedido
+  setState(() {
+    _nombrePedido = '';
+  });
 
-  String _generarResumenOrden() {
-    // Generar el resumen de la orden
-    String resumen = 'Nombre del Pedido: $_nombrePedido\n';
-    resumen += 'ID del Pedido: $_pedidoId\n';
-    // Agregar los insumos y cantidades seleccionadas
-    _textEditingControllerMap.forEach((insumo, controller) {
-      int cantidad = int.tryParse(controller.text) ?? 0;
-      if (cantidad > 0) {
-        resumen += '${insumo.nombre}: $cantidad\n';
-      }
-    });
-    return resumen;
+  // Volver a la pantalla anterior a InsumoSelectionScreen
+  Navigator.pop(context);
+}
+
+
+String _generarResumenOrden() {
+  // Obtener la fecha y hora actual
+  String fechaHoraActual = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+  // Generar el resumen de la orden
+  String resumen = 'Nombre del Pedido: $_nombrePedido\n';
+  resumen += 'ID del Pedido: $_pedidoId\n';
+  resumen += 'Área seleccionada: $_selectedArea\n'; // Agregar el área seleccionada
+
+  // Agregar la fecha y hora de la orden
+  resumen += 'Fecha y hora de la orden: $fechaHoraActual\n';
+
+  // Agregar los insumos y cantidades seleccionadas
+  _textEditingControllerMap.forEach((insumo, controller) {
+    int cantidadSeleccionada = int.tryParse(controller.text) ?? 0;
+    if (cantidadSeleccionada > 0) {
+      resumen += '${insumo.nombre}: ${insumo.cantidad - cantidadSeleccionada}\n';
+    }
+  });
+  return resumen;
+}
+
+
+  String quitarDiacriticos(String input) {
+    return input.replaceAll(RegExp(r'[áÁ]'), 'a')
+                .replaceAll(RegExp(r'[éÉ]'), 'e')
+                .replaceAll(RegExp(r'[íÍ]'), 'i')
+                .replaceAll(RegExp(r'[óÓ]'), 'o')
+                .replaceAll(RegExp(r'[úÚ]'), 'u');
   }
 }

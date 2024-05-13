@@ -138,6 +138,7 @@ setState(() {
 });
     if (user != null) {
       showToast(message: "User is successfully created");
+      // ignore: use_build_context_synchronously
       Navigator.pushNamed(context, "/login");
     } else {
       showToast(message: "Some error happend");

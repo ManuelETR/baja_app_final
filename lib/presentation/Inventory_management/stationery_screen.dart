@@ -5,28 +5,44 @@ import 'package:intl/intl.dart';
 import 'package:baja_app/dominio/insumos.dart';
 import 'package:baja_app/services/firebase_service.dart';
 import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logger/logger.dart';
+
 
 class StationeryScreen extends StatefulWidget {
-  const StationeryScreen({Key? key}) : super(key: key);
+  const StationeryScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _StationeryScreenState createState() => _StationeryScreenState();
 }
 
 class _StationeryScreenState extends State<StationeryScreen> {
   List<Insumo> _insumos = [];
+  Set<String> _notifiedInsumoIds = <String>{}; // Conjunto para almacenar los IDs de los insumos notificados
+  final Logger logger = Logger();
+
 
   @override
   void initState() {
     super.initState();
-    _loadInsumos();
+    _loadInsumos('papeleria');
   }
 
-  Future<void> _loadInsumos() async {
-    List<Insumo> insumos = await FirebaseService.getInsumosFromDatabase('papeleria');
+  Future<void> _loadInsumos(String inventoryId) async {
+    List<Insumo> insumos = await FirebaseService.getInsumosFromDatabase(inventoryId);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Set<String>? notifiedInsumoIds = prefs.getStringList('notifiedInsumoIds')?.toSet() ?? {};
+
     setState(() {
       _insumos = insumos;
+      _notifiedInsumoIds = notifiedInsumoIds;
     });
+
+    // Verificar la cantidad mínima para cada insumo cargado
+    for (var insumo in _insumos) {
+      _verificarCantidadMinima(insumo);
+    }
   }
 
   void _incrementarCantidad(Insumo insumo) async {
@@ -34,13 +50,7 @@ class _StationeryScreenState extends State<StationeryScreen> {
     setState(() {
       insumo.cantidad++;
     });
-    if (insumo.cantidad <= insumo.cantidadMinima) {
-      DateTime now = DateTime.now();
-      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-      String message = 'Insumo ${insumo.nombre} del área de Papelería llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
-      // ignore: use_build_context_synchronously
-      SnackbarUtils.showSnackbar(context, message);
-    }
+    _verificarCantidadMinima(insumo);
   }
 
   void _decrementarCantidad(Insumo insumo) async {
@@ -50,12 +60,28 @@ class _StationeryScreenState extends State<StationeryScreen> {
         insumo.cantidad--;
       }
     });
-    if (insumo.cantidad <= insumo.cantidadMinima) {
+    _verificarCantidadMinima(insumo);
+  }
+
+  void _verificarCantidadMinima(Insumo insumo) async {
+    if (insumo.cantidad <= insumo.cantidadMinima && !_notifiedInsumoIds.contains(insumo.id)) {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-      String message = 'Insumo ${insumo.nombre} del área de Papelería llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
-      // ignore: use_build_context_synchronously
+      String message =
+          'Insumo ${insumo.nombre} del área de Papelería llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
       SnackbarUtils.showSnackbar(context, message);
+      _notifiedInsumoIds.add(insumo.id); // Agregar el ID del insumo al conjunto de notificados
+
+      // Guardar el estado actual de _notifiedInsumoIds en SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('notifiedInsumoIds', _notifiedInsumoIds.toList());
+    } else if (insumo.cantidad > insumo.cantidadMinima && _notifiedInsumoIds.contains(insumo.id)) {
+      // Si la cantidad es mayor que cantidadMinima y el insumo estaba notificado, eliminarlo del conjunto de notificados
+      _notifiedInsumoIds.remove(insumo.id);
+
+      // Actualizar el estado en SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('notifiedInsumoIds', _notifiedInsumoIds.toList());
     }
   }
 
@@ -97,13 +123,17 @@ class _StationeryScreenState extends State<StationeryScreen> {
     final List<Insumo>? selectedInsumos = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => InsumoSelectionScreen(insumos: _insumos),
+        builder: (context) => InsumoSelectionScreen(
+          insumos: _insumos,
+          updateParentScreen: () {
+            _loadInsumos('papeleria');
+          },
+        ),
       ),
     );
 
     if (selectedInsumos != null) {
-      // Aquí puedes manejar los insumos seleccionados
-      print('Insumos seleccionados: $selectedInsumos');
+      logger.d('Insumos seleccionados: $selectedInsumos');
     }
   }
 
@@ -134,7 +164,7 @@ class _StationeryScreenState extends State<StationeryScreen> {
                   builder: (context) => AddProductForm(
                     inventoryId: 'papeleria',
                     onInsumoAdded: (String nombre, int cantidad, int cantidadMinima) {
-                      _loadInsumos();
+                      _loadInsumos('papeleria');
                     },
                   ),
                 ),
@@ -160,7 +190,7 @@ class _StationeryScreenState extends State<StationeryScreen> {
               subtitle: Text(
                 'Cantidad: ${insumo.cantidad}',
                 style: const TextStyle(
-                  fontStyle: FontStyle.italic
+                  fontStyle: FontStyle.italic,
                 ),
               ),
               trailing: Row(
