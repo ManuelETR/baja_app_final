@@ -48,39 +48,25 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     _isLoading = true;
   });
 
-  final updatedFields = <String, dynamic>{};
+  final updatedFields = <String, dynamic>{
+    'name': _nameController.text,
+    'lastName': _lastNameController.text,
+    'bio': _bioController.text,
+    'phone': _phoneController.text,
+    'address': _addressController.text,
+    'website': _websiteController.text,
+  };
 
-  if (_nameController.text != widget.user.name) {
-    updatedFields['name'] = _nameController.text;
-  }
-  if (_lastNameController.text != widget.user.lastName) {
-    updatedFields['lastName'] = _lastNameController.text;
-  }
-  if (_bioController.text != widget.user.bio) {
-    updatedFields['bio'] = _bioController.text;
-  }
-  if (_phoneController.text != widget.user.phone) {
-    updatedFields['phone'] = _phoneController.text;
-  }
-  if (_addressController.text != widget.user.address) {
-    updatedFields['address'] = _addressController.text;
-  }
-  if (_websiteController.text != widget.user.website) {
-    updatedFields['website'] = _websiteController.text;
-  }
+  final authService = FirebaseAuthService();
+  await authService.updateUserFieldsInFirestore(widget.user.uid, updatedFields);
 
-  if (updatedFields.isNotEmpty) {
-    final authService = FirebaseAuthService();
-    await authService.updateUserFieldsInFirestore(widget.user.uid, updatedFields);
-
-    // Actualizar el objeto usuario con los nuevos valores
-    widget.user.name = _nameController.text;
-    widget.user.lastName = _lastNameController.text;
-    widget.user.bio = _bioController.text;
-    widget.user.phone = _phoneController.text;
-    widget.user.address = _addressController.text;
-    widget.user.website = _websiteController.text;
-  }
+  // Actualizar el objeto usuario con los nuevos valores
+  widget.user.name = _nameController.text;
+  widget.user.lastName = _lastNameController.text;
+  widget.user.bio = _bioController.text;
+  widget.user.phone = _phoneController.text;
+  widget.user.address = _addressController.text;
+  widget.user.website = _websiteController.text;
 
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(content: Text('Cambios guardados')),

@@ -37,6 +37,21 @@ class UserM {
     );
   }
 
+  // Constructor estático para crear un usuario predeterminado
+  factory UserM.defaultUser() {
+    return UserM(
+      uid: '',
+      email: '',
+      name: '', // Inicializa otros campos vacíos
+      lastName: '',
+      bio: '',
+      phone: '',
+      address: '',
+      website: '',
+      imageUrl: '',
+    );
+  }
+
   UserM? copyWith({required String imageUrl}) {
     return null;
   }

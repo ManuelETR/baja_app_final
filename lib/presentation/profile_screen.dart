@@ -37,6 +37,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _user = user;
       _isLoading = false;
     });
+
+    if (_user == null || !_isProfileComplete(_user!)) {
+      // El usuario no tiene un perfil completo, navega a la pantalla de configuración de perfil
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ProfileSettingsScreen(user: _user ?? UserM.defaultUser())),
+      );
+    }
+  }
+
+  bool _isProfileComplete(UserM user) {
+    // Aquí puedes implementar tu lógica para verificar si el perfil del usuario está completo.
+    // Por ejemplo, puedes verificar si todos los campos obligatorios (nombre, apellido, etc.) están llenos.
+    return user.name.isNotEmpty && user.lastName.isNotEmpty;
   }
 
   Future<File?> _pickImage() async {
@@ -70,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _getUserData();  // Recargar el perfil después de actualizar la imagen
   }
 
-  void _changeProfileImage() async {
+  Future<void> _changeProfileImage() async {
     final imageFile = await _pickImage();
     if (imageFile != null) {
       setState(() {
@@ -82,9 +96,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         await _updateProfileImage(imageUrl);
       }
 
+      // Después de actualizar la imagen, actualiza el estado de carga y recarga los datos del usuario
       setState(() {
         _isLoading = false;
       });
+
+      await _getUserData(); // Recargar el perfil después de actualizar la imagen
     }
   }
 

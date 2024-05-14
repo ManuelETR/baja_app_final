@@ -2,6 +2,7 @@ import 'package:baja_app/config/theme/app_theme.dart';
 import 'package:baja_app/dominio/user.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'presentation/index.dart';
 
@@ -14,36 +15,29 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  // ignore: use_key_in_widget_constructors
   MyApp({Key? key});
 
   final _routes = {
-   // '/': (context) => const SplashScreen(),
-    '/': (context) => const LoginPage(),
     '/sign': (context) => const SignUpPage(),
     '/home': (context) => const HomeScreen(),
     '/profile': (context) {
-          final currentUser = FirebaseAuth.instance.currentUser;
-          if (currentUser != null) {
-            return ProfileScreen(userId: currentUser.uid);
-          } else {
-            // Manejar el caso en el que no haya un usuario autenticado
-            // Por ejemplo, puedes redirigir a la pantalla de inicio de sesión
-            return const LoginPage();
-          }
-        },
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        return ProfileScreen(userId: currentUser.uid);
+      } else {
+        return const LoginPage();
+      }
+    },
     '/profilesettings': (context) {
-  final currentUser = FirebaseAuth.instance.currentUser;
-  if (currentUser != null) {
-    return ProfileSettingsScreen(user: UserM.fromFirebaseUser(currentUser));
-  } else {
-    // Manejar el caso en el que no haya un usuario autenticado
-    // Por ejemplo, puedes redirigir a la pantalla de inicio de sesión
-    return const LoginPage();
-  }
-},
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        return ProfileSettingsScreen(user: UserM.fromFirebaseUser(currentUser));
+      } else {
+        return const LoginPage();
+      }
+    },
     '/activity': (context) => const ActivityScreen(),
-    '/notifications': (context) =>  const NotificationsScreen(),
+    '/notifications': (context) => const NotificationsScreen(),
     '/inventory': (context) => const InventoryScreen(),
     '/production': (context) => const ProductionScreen(),
     '/stationery': (context) => const StationeryScreen(),
@@ -56,7 +50,7 @@ class MyApp extends StatelessWidget {
         onInsumoAdded: onInsumoAdded,
       );
     },
-    '/order': (context) => InsumoSelectionScreen(insumos: const [], updateParentScreen: () {  }),
+    '/order': (context) => InsumoSelectionScreen(insumos: const [], updateParentScreen: () {}),
   };
 
   @override
@@ -67,10 +61,29 @@ class MyApp extends StatelessWidget {
       theme: AppTheme(selectedColor: 0).theme(),
       initialRoute: '/',
       routes: _routes,
+      home: AuthWrapper(),
     );
   }
 
   static void onInsumoAdded(String id, int cantidad, int cantidadMinima) {
     // Lógica para manejar el nuevo insumo agregado
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasData) {
+          return const HomeScreen();
+        } else {
+          return const LoginPage();
+        }
+      },
+    );
   }
 }

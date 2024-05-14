@@ -1,3 +1,4 @@
+import 'package:baja_app/dominio/user.dart';
 import 'package:baja_app/presentation/login/sign.dart';
 import 'package:baja_app/services/firebase_auth_service.dart';
 import 'package:baja_app/widgets/login/form_container.dart';
@@ -188,47 +189,82 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _signIn() async {
-    setState(() {
-      _isSigning = true;
-    });
+void _signIn() async {
+  setState(() {
+    _isSigning = true;
+  });
 
-    String email = _emailController.text;
-    String password = _passwordController.text;
+  String email = _emailController.text;
+  String password = _passwordController.text;
 
+  try {
+    // Autenticar al usuario
     User? user = await _auth.signInWithEmailAndPassword(email, password);
 
+    if (user != null) {
+      // Verificar si el documento del usuario existe en Firestore
+      UserM? userProfile = await _auth.getUserProfile(user.uid);
+
+      if (userProfile == null) {
+        // Si el documento no existe, crearlo
+        await _auth.createUserProfile(user.uid, user.email!);
+      }
+
+      showToast(message: "User is successfully signed in");
+
+      // Navegar a la pantalla de inicio una vez autenticado y perfil creado/verificado
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, "/home");
+      }
+    } else {
+      showToast(message: "Some error occurred");
+    }
+  } on FirebaseAuthException catch (e) {
+    showToast(message: "Authentication error: ${e.message}");
+  } on FirebaseException catch (e) {
+    showToast(message: "Firestore error: ${e.message}");
+  } catch (e) {
+    showToast(message: "An unknown error occurred: $e");
+  } finally {
     setState(() {
       _isSigning = false;
     });
-
-    if (user != null) {
-      showToast(message: "User is successfully signed in");
-      Navigator.pushReplacementNamed(context, "/home");
-    } else {
-      showToast(message: "some error occurred");
-    }
   }
+}
 
-  Future<void> _signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleSignInAccount =
-          await _googleSignIn.signIn();
 
-      if (googleSignInAccount != null) {
-        final GoogleSignInAuthentication googleSignInAuthentication =
-            await googleSignInAccount.authentication;
 
-        final AuthCredential credential = GoogleAuthProvider.credential(
-          idToken: googleSignInAuthentication.idToken,
-          accessToken: googleSignInAuthentication.accessToken,
-        );
 
-        await _firebaseAuth.signInWithCredential(credential);
+
+Future<void> _signInWithGoogle() async {
+  try {
+    final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
+
+    if (googleSignInAccount != null) {
+      final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleSignInAuthentication.idToken,
+        accessToken: googleSignInAuthentication.accessToken,
+      );
+
+      UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // Check if the user document exists in Firestore
+        UserM? userProfile = await _auth.getUserProfile(user.uid);
+
+        if (userProfile == null) {
+          // If the user document does not exist, create it
+          await _auth.createUserProfile(user.uid, user.email!);
+        }
+
         Navigator.pushReplacementNamed(context, "/home");
       }
-    } catch (e) {
-      showToast(message: "some error occurred $e");
     }
+  } catch (e) {
+    showToast(message: "some error occurred $e");
   }
+}
 }

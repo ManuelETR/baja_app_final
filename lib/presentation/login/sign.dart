@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+  const SignUpPage({Key? key});
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -32,7 +32,6 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -71,9 +70,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 height: 30,
               ),
               GestureDetector(
-                onTap:  (){
+                onTap: () {
                   _signUp();
-
                 },
                 child: Container(
                   width: double.infinity,
@@ -83,11 +81,14 @@ class _SignUpPageState extends State<SignUpPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
-                      child: isSigningUp ? const CircularProgressIndicator(color: Colors.white,):const Text(
-                    "Crear Cuenta",
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  )),
+                    child: isSigningUp
+                        ? const CircularProgressIndicator(color: Colors.white,)
+                        : const Text(
+                            "Crear Cuenta",
+                            style: TextStyle(
+                                color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                  ),
                 ),
               ),
               const SizedBox(
@@ -104,8 +105,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       onTap: () {
                         Navigator.pushAndRemoveUntil(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => const LoginPage()),
+                            MaterialPageRoute(builder: (context) => const LoginPage()),
                             (route) => false);
                       },
                       child: const Text(
@@ -123,22 +123,21 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _signUp() async {
-
-setState(() {
-  isSigningUp = true;
-});
+    setState(() {
+      isSigningUp = true;
+    });
 
     String email = _emailController.text;
     String password = _passwordController.text;
 
     User? user = await _auth.signUpWithEmailAndPassword(email, password);
 
-setState(() {
-  isSigningUp = false;
-});
+    setState(() {
+      isSigningUp = false;
+    });
+
     if (user != null) {
       showToast(message: "User is successfully created");
-      // ignore: use_build_context_synchronously
       Navigator.pushNamed(context, "/login");
     } else {
       showToast(message: "Some error happend");

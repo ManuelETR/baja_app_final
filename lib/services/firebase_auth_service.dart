@@ -66,17 +66,18 @@ class FirebaseAuthService {
   Future<UserM?> getUserProfile(String uid) async {
     try {
       DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
-      if (doc.exists) {
+      if (doc.exists && doc.data() != null) {
+        var data = doc.data() as Map<String, dynamic>;
         return UserM(
           uid: doc.id,
-          email: doc['email'] ?? '',
-          name: doc['name'] ?? '',
-          lastName: doc['lastName'] ?? '',
-          bio: doc['bio'] ?? '',
-          phone: doc['phone'] ?? '',
-          address: doc['address'] ?? '',
-          website: doc['website'] ?? '',
-          imageUrl: doc['imageUrl'] ?? '',
+          email: data['email'] ?? '',
+          name: data.containsKey('name') ? data['name'] : '',
+          lastName: data.containsKey('lastName') ? data['lastName'] : '',
+          bio: data.containsKey('bio') ? data['bio'] : '',
+          phone: data.containsKey('phone') ? data['phone'] : '',
+          address: data.containsKey('address') ? data['address'] : '',
+          website: data.containsKey('website') ? data['website'] : '',
+          imageUrl: data.containsKey('imageUrl') ? data['imageUrl'] : '',
         );
       } else {
         showToast(message: 'Profile does not exist.');
@@ -86,4 +87,27 @@ class FirebaseAuthService {
     }
     return null;
   }
+
+Future<void> createUserProfile(String uid, String email) async {
+  try {
+    await _firestore.collection('users').doc(uid).set({
+      'email': email,
+      'name': '',
+      'lastName': '',
+      'bio': '',
+      'phone': '',
+      'address': '',
+      'website': '',
+      'imageUrl': '',
+    });
+    showToast(message: 'Profile created successfully.');
+  } on FirebaseException catch (e) {
+    print("Error while creating profile: $e");
+    showToast(message: 'An error occurred while creating profile: ${e.message}');
+  } catch (e) {
+    print("Unknown error while creating profile: $e");
+    showToast(message: 'An unknown error occurred while creating profile: $e');
+  }
+}
+
 }
