@@ -1,4 +1,5 @@
 import 'package:baja_app/config/theme/app_theme.dart';
+import 'package:baja_app/dominio/user.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -21,7 +22,26 @@ class MyApp extends StatelessWidget {
     '/': (context) => const LoginPage(),
     '/sign': (context) => const SignUpPage(),
     '/home': (context) => const HomeScreen(),
-    '/profile': (context) => const ProfileScreen(),
+    '/profile': (context) {
+          final currentUser = FirebaseAuth.instance.currentUser;
+          if (currentUser != null) {
+            return ProfileScreen(userId: currentUser.uid);
+          } else {
+            // Manejar el caso en el que no haya un usuario autenticado
+            // Por ejemplo, puedes redirigir a la pantalla de inicio de sesión
+            return const LoginPage();
+          }
+        },
+    '/profilesettings': (context) {
+  final currentUser = FirebaseAuth.instance.currentUser;
+  if (currentUser != null) {
+    return ProfileSettingsScreen(user: UserM.fromFirebaseUser(currentUser));
+  } else {
+    // Manejar el caso en el que no haya un usuario autenticado
+    // Por ejemplo, puedes redirigir a la pantalla de inicio de sesión
+    return const LoginPage();
+  }
+},
     '/activity': (context) => const ActivityScreen(),
     '/notifications': (context) =>  const NotificationsScreen(),
     '/inventory': (context) => const InventoryScreen(),
