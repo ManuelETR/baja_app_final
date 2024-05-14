@@ -11,7 +11,6 @@ class InsumoSelectionScreen extends StatefulWidget {
   const InsumoSelectionScreen({super.key, required this.insumos, required this.updateParentScreen});
 
   @override
-  // ignore: library_private_types_in_public_api
   _InsumoSelectionScreenState createState() => _InsumoSelectionScreenState();
 }
 
@@ -45,10 +44,22 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Seleccionar Insumos'),
+                leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_outlined),
+          color: Colors.white,
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF053F93),
+        title: const Text(
+          'Seleccionar Insumos',
+          style: TextStyle(fontSize: 23, color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.check),
+            icon: const Icon(Icons.check, color: Colors.white),
             onPressed: _revisarOrden,
           ),
         ],
@@ -120,6 +131,10 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
                           onChanged: (value) {
+                            int nuevaCantidad = int.tryParse(value) ?? 0;
+                            if (nuevaCantidad < 0) {
+                              controller.text = '0'; // Restablecer a 0 si el valor es negativo
+                            }
                             setState(() {});
                           },
                         ),
@@ -144,7 +159,9 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
   }
 
   void _updateCantidad(Insumo insumo, int cantidad) {
-    _textEditingControllerMap[insumo]!.text = cantidad.toString();
+    if (cantidad >= 0) {
+      _textEditingControllerMap[insumo]!.text = cantidad.toString();
+    }
   }
 
   void _revisarOrden() {
@@ -191,70 +208,69 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
     );
   }
 
-void _finalizarPedido() async {
-  String areaSeleccionada = _selectedArea.toLowerCase(); // Convertir a minúsculas y quitar diacríticos
-  areaSeleccionada = quitarDiacriticos(areaSeleccionada);
-  // Actualizar las cantidades de los insumos seleccionados en Firestore
-  _textEditingControllerMap.forEach((insumo, controller) async {
-    int cantidadSeleccionada = int.tryParse(controller.text) ?? 0;
-    if (cantidadSeleccionada != 0) {
-      int nuevaCantidad = insumo.cantidad - cantidadSeleccionada; // Restar la cantidad seleccionada
-      // Actualizar la cantidad en Firestore con el nombre del área ajustado
-      await FirebaseService.actualizarCantidadInsumo(areaSeleccionada, insumo.id, nuevaCantidad);
+  void _finalizarPedido() async {
+    String areaSeleccionada = _selectedArea.toLowerCase(); // Convertir a minúsculas y quitar diacríticos
+    areaSeleccionada = quitarDiacriticos(areaSeleccionada);
+    // Actualizar las cantidades de los insumos seleccionados en Firestore
+    _textEditingControllerMap.forEach((insumo, controller) async {
+      int cantidadSeleccionada = int.tryParse(controller.text) ?? 0;
+      if (cantidadSeleccionada != 0) {
+        int nuevaCantidad = insumo.cantidad - cantidadSeleccionada; // Restar la cantidad seleccionada
+        // Actualizar la cantidad en Firestore con el nombre del área ajustado
+        await FirebaseService.actualizarCantidadInsumo(areaSeleccionada, insumo.id, nuevaCantidad);
+      }
+    });
+    // Agregar el pedido al historial
+    PedidoHistory.addPedido(_generarResumenOrden());
+
+    // Llamar a la función de actualización de la pantalla anterior
+    widget.updateParentScreen();
+
+    // Cerrar el diálogo de resumen
+    Navigator.pop(context);
+
+    // Limpiar los valores de los controladores de texto
+    for (var controller in _textEditingControllerMap.values) {
+      controller.clear();
     }
-  });
-  // Agregar el pedido al historial
-  PedidoHistory.addPedido(_generarResumenOrden());
 
-  // Llamar a la función de actualización de la pantalla anterior
-  widget.updateParentScreen();
+    // Reiniciar el nombre del pedido
+    setState(() {
+      _nombrePedido = '';
+    });
 
-  // Cerrar el diálogo de resumen
-  Navigator.pop(context);
+    // Volver a la pantalla anterior a InsumoSelectionScreen
+    Navigator.pop(context);
+  }
 
-  // Limpiar los valores de los controladores de texto
-  _textEditingControllerMap.values.forEach((controller) {
-    controller.clear();
-  });
+  String _generarResumenOrden() {
+    // Obtener la fecha y hora actual
+    String fechaHoraActual = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
-  // Reiniciar el nombre del pedido
-  setState(() {
-    _nombrePedido = '';
-  });
+    // Generar el resumen de la orden
+    String resumen = 'Nombre del Pedido: $_nombrePedido\n';
+    resumen += 'ID del Pedido: $_pedidoId\n';
+    resumen += 'Área seleccionada: $_selectedArea\n'; // Agregar el área seleccionada
 
-  // Volver a la pantalla anterior a InsumoSelectionScreen
-  Navigator.pop(context);
-}
+    // Agregar la fecha y hora de la orden
+    resumen += 'Fecha y hora de la orden: $fechaHoraActual\n';
 
-
-String _generarResumenOrden() {
-  // Obtener la fecha y hora actual
-  String fechaHoraActual = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-
-  // Generar el resumen de la orden
-  String resumen = 'Nombre del Pedido: $_nombrePedido\n';
-  resumen += 'ID del Pedido: $_pedidoId\n';
-  resumen += 'Área seleccionada: $_selectedArea\n'; // Agregar el área seleccionada
-
-  // Agregar la fecha y hora de la orden
-  resumen += 'Fecha y hora de la orden: $fechaHoraActual\n';
-
-  // Agregar los insumos y cantidades seleccionadas
-  _textEditingControllerMap.forEach((insumo, controller) {
-    int cantidadSeleccionada = int.tryParse(controller.text) ?? 0;
-    if (cantidadSeleccionada > 0) {
-      resumen += '${insumo.nombre}: ${insumo.cantidad - cantidadSeleccionada}\n';
-    }
-  });
-  return resumen;
-}
-
+    // Agregar los insumos y cantidades seleccionadas
+    _textEditingControllerMap.forEach((insumo, controller) {
+      int cantidadSeleccionada = int.tryParse(controller.text) ?? 0;
+      if (cantidadSeleccionada > 0) {
+        resumen += '${insumo.nombre}: ${insumo.cantidad - cantidadSeleccionada}\n';
+      }
+    });
+    return resumen;
+  }
 
   String quitarDiacriticos(String input) {
-    return input.replaceAll(RegExp(r'[áÁ]'), 'a')
-                .replaceAll(RegExp(r'[éÉ]'), 'e')
-                .replaceAll(RegExp(r'[íÍ]'), 'i')
-                .replaceAll(RegExp(r'[óÓ]'), 'o')
-                .replaceAll(RegExp(r'[úÚ]'), 'u');
+    return input
+        .replaceAll(RegExp(r'[áÁ]'), 'a')
+        .replaceAll(RegExp(r'[éÉ]'), 'e')
+        .replaceAll(RegExp(r'[íÍ]'), 'i')
+        .replaceAll(RegExp(r'[óÓ]'), 'o') 
+        .replaceAll(RegExp(r'[úÚ]'), 'u');
   }
 }

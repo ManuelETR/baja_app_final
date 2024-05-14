@@ -176,7 +176,8 @@ class _CleaningScreenState extends State<CleaningScreen> {
         itemBuilder: (context, index) {
           Insumo insumo = _insumos[index];
           return Container(
-            color: insumo.cantidad <= insumo.cantidadMinima ? Colors.pink[100] : null,
+            color: insumo.cantidad == 0 ? Colors.grey[700] : 
+            insumo.cantidad <= insumo.cantidadMinima ? Colors.pink[100] : null,
             child: ListTile(
               title: Text(
                 insumo.nombre,

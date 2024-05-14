@@ -67,21 +67,22 @@ class _MyAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: const Color(0xFF053F93),
       title: const Row(
         children: [
-          Text(
-            'Baja App',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
+            Text(
+              'Baja App',
+              style: TextStyle(
+                fontFamily: 'Syne', // Usar la fuente Syne
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold, // Puedes ajustar el peso de la fuente según tus preferencias
+              ),
             ),
-          ),
           VerticalDivider(),
-          Icon(Icons.all_inbox_sharp, color: Colors.white, size: 30),
+          Icon(Icons.table_chart_rounded, color: Colors.white, size: 35),
         ],
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.person_outline, color: Colors.white, size: 35),
+          icon: const Icon(Icons.person_rounded, color: Colors.white, size: 40),
           onPressed: () {
             Navigator.pushNamed(context, '/profile');
           },

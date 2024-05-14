@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:baja_app/dominio/notifications/snackbar_history.dart'; // Importa la clase SnackBarHistory
+import 'package:baja_app/dominio/notifications/snackbar_history.dart'; 
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+  const NotificationsScreen({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _NotificationsScreenState createState() => _NotificationsScreenState();
 }
 
@@ -19,7 +18,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _loadMessages() async {
-    final messages = await SnackBarHistory.getMessages(); // Utiliza el método getMessages de SnackBarHistory
+    final messages = await SnackBarHistory.getMessages(); 
     setState(() {
       this.messages = messages;
     });
@@ -56,11 +55,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
+                color: Color(0xFFFFC0CB), // Color rosa pastel
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 1,
+                    blurRadius: 3,
+                    offset: const Offset(0, 2), // changes position of shadow
+                  ),
+                ],
                 borderRadius: BorderRadius.circular(10),
               ),
               padding: const EdgeInsets.all(8.0),
-              child: Text(messages[index]),
+              child: Row(
+                children: [
+                  const Icon(Icons.notification_important, color: Color(0xFF053F93)), // Icono decorativo
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      messages[index],
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), // Texto en negrita
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -96,7 +114,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _confirmClearMessages() async {
-    await SnackBarHistory.clearMessages(); // Utiliza el método clearMessages de SnackBarHistory
+    await SnackBarHistory.clearMessages(); 
     setState(() {
       messages = [];
     });

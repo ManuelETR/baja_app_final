@@ -7,10 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-  
+  const LoginPage({Key? key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -20,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isSigning = false;
   final FirebaseAuthService _auth = FirebaseAuthService();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -31,140 +30,161 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _checkAndSignOut();
+  }
+
+  Future<void> _checkAndSignOut() async {
+    final currentUser = _firebaseAuth.currentUser;
+    if (currentUser != null) {
+      await _firebaseAuth.signOut();
+      await _googleSignIn.signOut();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-                    // Aquí se agrega la imagen del logotipo de la empresa
-                  Container(
-                    width: 200, // Ajusta el ancho según tus necesidades
-                    height: 200, // Ajusta la altura según tus necesidades
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/BBLogo.png'), // Ruta de la imagen del logotipo de la empresa
-                        fit: BoxFit.contain, // Ajusta el tamaño de la imagen para que quepa dentro del contenedor
+    return FutureBuilder(
+      future: _checkAndSignOut(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else {
+          return Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 200,
+                      height: 200,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/BBLogo.png'),
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20), // Espacio entre la imagen y el título
-              //AQUI TIENE QUE IR EL LOGO DE LA EMPRESA CENTRADO
-              const Text(
-                "Iniciar Sesión",
-                style: TextStyle(fontSize: 27, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              FormContainerWidget(
-                controller: _emailController,
-                hintText: "Correo Electrónico",
-                isPasswordField: false,
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              FormContainerWidget(
-                controller: _passwordController,
-                hintText: "Constraseña",
-                isPasswordField: true,
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              GestureDetector(
-                onTap: () {
-                  _signIn();
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: _isSigning ? const CircularProgressIndicator(
-                      color: Colors.white,) : const Text(
-                      "Acceder",
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Iniciar Sesión",
                       style: TextStyle(
-                        color: Colors.white,
+                        fontSize: 27,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10,),
-              GestureDetector(
-                onTap: () {
-                  _signInWithGoogle();
-
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Center(
-                    child: Row(
+                    const SizedBox(height: 30),
+                    FormContainerWidget(
+                      controller: _emailController,
+                      hintText: "Correo Electrónico",
+                      isPasswordField: false,
+                    ),
+                    const SizedBox(height: 10),
+                    FormContainerWidget(
+                      controller: _passwordController,
+                      hintText: "Contraseña",
+                      isPasswordField: true,
+                    ),
+                    const SizedBox(height: 30),
+                    GestureDetector(
+                      onTap: () {
+                        _signIn();
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 45,
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: _isSigning
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text(
+                                  "Acceder",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: () {
+                        _signInWithGoogle();
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 45,
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                FontAwesomeIcons.google,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 5),
+                              Text(
+                                "Acceder con Google",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FontAwesomeIcons.google, color: Colors.white,),
-                        SizedBox(width: 5,),
-                        Text(
-                          "Acceder con Google",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                        const Text("¿No tienes una cuenta?"),
+                        const SizedBox(width: 5),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SignUpPage(),
+                              ),
+                              (route) => false,
+                            );
+                          },
+                          child: const Text(
+                            "Regístrate",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
               ),
-
-
-              const SizedBox(
-                height: 20,
-              ),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("¿No tienes una cuenta?"),
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SignUpPage()),
-                            (route) => false,
-                      );
-                    },
-                    child: const Text(
-                      "Regístrate",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
+          );
+        }
+      },
     );
   }
 
@@ -184,25 +204,20 @@ class _LoginPageState extends State<LoginPage> {
 
     if (user != null) {
       showToast(message: "User is successfully signed in");
-      // ignore: use_build_context_synchronously
       Navigator.pushReplacementNamed(context, "/home");
     } else {
-      showToast(message: "some error occured");
+      showToast(message: "some error occurred");
     }
   }
 
-
-  _signInWithGoogle()async{
-
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-
+  Future<void> _signInWithGoogle() async {
     try {
+      final GoogleSignInAccount? googleSignInAccount =
+          await _googleSignIn.signIn();
 
-      final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
-
-      if(googleSignInAccount != null ){
-        final GoogleSignInAuthentication googleSignInAuthentication = await
-        googleSignInAccount.authentication;
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+            await googleSignInAccount.authentication;
 
         final AuthCredential credential = GoogleAuthProvider.credential(
           idToken: googleSignInAuthentication.idToken,
@@ -212,13 +227,8 @@ class _LoginPageState extends State<LoginPage> {
         await _firebaseAuth.signInWithCredential(credential);
         Navigator.pushReplacementNamed(context, "/home");
       }
-
-    }catch(e) {
-showToast(message: "some error occured $e");
+    } catch (e) {
+      showToast(message: "some error occurred $e");
     }
-
-
   }
-
-
 }

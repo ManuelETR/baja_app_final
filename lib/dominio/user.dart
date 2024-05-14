@@ -37,5 +37,7 @@ class UserM {
     );
   }
 
-  UserM? copyWith({required String imageUrl}) {}
+  UserM? copyWith({required String imageUrl}) {
+    return null;
+  }
 }

@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:baja_app/dominio/pedidos/pedido_history.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({super.key});
+  const ActivityScreen({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _ActivityScreenState createState() => _ActivityScreenState();
 }
 
@@ -56,9 +55,47 @@ class _ActivityScreenState extends State<ActivityScreen> {
               itemCount: _pedidos.length,
               itemBuilder: (context, index) {
                 String pedido = _pedidos[index];
-                return ListTile(
-                  title: Text('Pedido ${index + 1}'),
-                  subtitle: Text(pedido),
+                List<String> elementos = pedido.split(','); // Suponiendo que los elementos estén separados por comas
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Pedido ${index + 1}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const Divider(), // Línea separadora
+                        ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: elementos.length,
+                          itemBuilder: (context, subIndex) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                              child: Text(
+                                elementos[subIndex],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               },
             )
