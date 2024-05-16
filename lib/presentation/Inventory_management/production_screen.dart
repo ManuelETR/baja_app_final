@@ -12,15 +12,13 @@ class ProductionScreen extends StatefulWidget {
   const ProductionScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _ProductionScreenState createState() => _ProductionScreenState();
 }
 
 class _ProductionScreenState extends State<ProductionScreen> {
   List<Insumo> _insumos = [];
-  Set<String> _notifiedInsumoIds = <String>{}; // Conjunto para almacenar los IDs de los insumos notificados
+  Set<String> _notifiedInsumoIds = <String>{};
   final Logger logger = Logger();
-
 
   @override
   void initState() {
@@ -28,21 +26,20 @@ class _ProductionScreenState extends State<ProductionScreen> {
     _loadInsumos('produccion');
   }
 
- Future<void> _loadInsumos(String inventoryId) async {
-  List<Insumo> insumos = await FirebaseService.getInsumosFromDatabase(inventoryId);
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  Set<String>? notifiedInsumoIds = prefs.getStringList('notifiedInsumoIds')?.toSet() ?? {};
+  Future<void> _loadInsumos(String inventoryId) async {
+    List<Insumo> insumos = await FirebaseService.getInsumosFromDatabase(inventoryId);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Set<String>? notifiedInsumoIds = prefs.getStringList('notifiedInsumoIds')?.toSet() ?? {};
 
-  setState(() {
-    _insumos = insumos;
-    _notifiedInsumoIds = notifiedInsumoIds;
-  });
+    setState(() {
+      _insumos = insumos;
+      _notifiedInsumoIds = notifiedInsumoIds;
+    });
 
-  // Verificar la cantidad mínima para cada insumo cargado
-  for (var insumo in _insumos) {
-    _verificarCantidadMinima(insumo);
+    for (var insumo in _insumos) {
+      _verificarCantidadMinima(insumo);
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -138,37 +135,55 @@ class _ProductionScreenState extends State<ProductionScreen> {
   }
 
   void _decrementarCantidad(Insumo insumo) async {
-    await FirebaseService.decrementarCantidadInsumo('produccion', insumo.id);
-    setState(() {
-      if (insumo.cantidad > 0) {
+    if (insumo.cantidad > 0) {
+      await FirebaseService.decrementarCantidadInsumo('produccion', insumo.id);
+      setState(() {
         insumo.cantidad--;
-      }
-    });
-    _verificarCantidadMinima(insumo);
+      });
+      _verificarCantidadMinima(insumo);
+    } else {
+      _mostrarAlertaCantidadNoValida();
+    }
   }
 
-void _verificarCantidadMinima(Insumo insumo) async {
-  if (insumo.cantidad <= insumo.cantidadMinima && !_notifiedInsumoIds.contains(insumo.id)) {
-    DateTime now = DateTime.now();
-    String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-    String message =
-        'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
-    SnackbarUtils.showSnackbar(context, message);
-    _notifiedInsumoIds.add(insumo.id); // Agregar el ID del insumo al conjunto de notificados
-
-    // Guardar el estado actual de _notifiedInsumoIds en SharedPreferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('notifiedInsumoIds', _notifiedInsumoIds.toList());
-  } else if (insumo.cantidad > insumo.cantidadMinima && _notifiedInsumoIds.contains(insumo.id)) {
-    // Si la cantidad es mayor que cantidadMinima y el insumo estaba notificado, eliminarlo del conjunto de notificados
-    _notifiedInsumoIds.remove(insumo.id);
-
-    // Actualizar el estado en SharedPreferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('notifiedInsumoIds', _notifiedInsumoIds.toList());
+  void _mostrarAlertaCantidadNoValida() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Cantidad no válida'),
+          content: const Text('La cantidad no puede ser menor a 0. El insumo está vacío.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
   }
-}
 
+  void _verificarCantidadMinima(Insumo insumo) async {
+    if (insumo.cantidad <= insumo.cantidadMinima && !_notifiedInsumoIds.contains(insumo.id)) {
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      String message =
+          'Insumo ${insumo.nombre} del área de Producción llegó a cantidad mínima, debes rellenar el stock. Fecha: $formattedDate';
+      SnackbarUtils.showSnackbar(context, message);
+      _notifiedInsumoIds.add(insumo.id);
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('notifiedInsumoIds', _notifiedInsumoIds.toList());
+    } else if (insumo.cantidad > insumo.cantidadMinima && _notifiedInsumoIds.contains(insumo.id)) {
+      _notifiedInsumoIds.remove(insumo.id);
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('notifiedInsumoIds', _notifiedInsumoIds.toList());
+    }
+  }
 
   void _eliminarInsumo(Insumo insumo) async {
     showDialog(
@@ -180,14 +195,14 @@ void _verificarCantidadMinima(Insumo insumo) async {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
+                Navigator.of(context).pop();
               },
               child: const Text('No'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-                _eliminarInsumoConfirmed(insumo); // Llamar al método de eliminación confirmado
+                Navigator.of(context).pop();
+                _eliminarInsumoConfirmed(insumo);
               },
               child: const Text('Sí'),
             ),

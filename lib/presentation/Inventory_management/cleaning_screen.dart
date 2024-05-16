@@ -52,13 +52,35 @@ class _CleaningScreenState extends State<CleaningScreen> {
   }
 
   void _decrementarCantidad(Insumo insumo) async {
-    await FirebaseService.decrementarCantidadInsumo('limpieza', insumo.id);
-    setState(() {
-      if (insumo.cantidad > 0) {
+    if (insumo.cantidad > 0) {
+      await FirebaseService.decrementarCantidadInsumo('limpieza', insumo.id);
+      setState(() {
         insumo.cantidad--;
-      }
-    });
-    _verificarCantidadMinima(insumo);
+      });
+      _verificarCantidadMinima(insumo);
+    } else {
+      _mostrarAlertaCantidadNoValida();
+    }
+  }
+
+  void _mostrarAlertaCantidadNoValida() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Cantidad no válida'),
+          content: const Text('La cantidad no puede ser menor a 0. El insumo está vacío.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _verificarCantidadMinima(Insumo insumo) async {

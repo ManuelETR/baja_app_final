@@ -8,7 +8,7 @@ class AddProductForm extends StatelessWidget {
   final void Function(String, int, int) onInsumoAdded;
   final Logger _logger = Logger();
 
-  AddProductForm({super.key, required this.inventoryId, required this.onInsumoAdded});
+  AddProductForm({Key? key, required this.inventoryId, required this.onInsumoAdded}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -67,29 +67,76 @@ class AddProductForm extends StatelessWidget {
   }
 
   void _submitForm(BuildContext context, String productName, String quantity, String minQuantity) {
+    if (productName.isEmpty || quantity.isEmpty || minQuantity.isEmpty) {
+      _mostrarAviso(context, 'Por favor rellena todos los campos');
+      return;
+    }
+
     final int parsedQuantity = int.tryParse(quantity) ?? 0;
     final int parsedMinQuantity = int.tryParse(minQuantity) ?? 0;
 
-    if (productName.isNotEmpty && parsedQuantity > 0 && parsedMinQuantity >= 0) {
-      final newInsumo = Insumo(
-        id: UniqueKey().toString(),
-        nombre: productName,
-        cantidad: parsedQuantity,
-        cantidadMinima: parsedMinQuantity,
-      );
-
-      FirebaseService.agregarInsumo(inventoryId, newInsumo).then((_) {
-        // Actualizar la interfaz de usuario después de agregar el insumo
-        onInsumoAdded(productName, parsedQuantity, parsedMinQuantity);
-        Navigator.pop(context); // Cierra el formulario después de agregar el insumo
-      }).catchError((error) {
-        // Manejar errores de base de datos, si es necesario
-        _logger.e('Error al agregar el insumo: $error');
-        // Puedes mostrar un snackbar o un diálogo de error aquí
-      });
-    } else {
-      // Manejar el caso en el que los campos del formulario no son válidos
-      // Por ejemplo, mostrar un mensaje de error o validar los campos individualmente
+    if (parsedQuantity < 0 || parsedMinQuantity < 0) {
+      _mostrarAviso(context, 'La cantidad y la cantidad mínima deben ser valores positivos');
+      return;
     }
+
+    _mostrarConfirmacion(context, productName, parsedQuantity, parsedMinQuantity);
+  }
+
+  void _mostrarAviso(BuildContext context, String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
+  void _mostrarConfirmacion(BuildContext context, String productName, int quantity, int minQuantity) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar Insumo'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Nombre: $productName'),
+              Text('Cantidad: $quantity'),
+              Text('Cantidad Mínima: $minQuantity'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                _agregarInsumo(context, productName, quantity, minQuantity);
+              },
+              child: const Text('Agregar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _agregarInsumo(BuildContext context, String productName, int quantity, int minQuantity) {
+    final newInsumo = Insumo(
+      id: UniqueKey().toString(),
+      nombre: productName,
+      cantidad: quantity,
+      cantidadMinima: minQuantity,
+    );
+
+    FirebaseService.agregarInsumo(inventoryId, newInsumo).then((_) {
+      // Actualizar la interfaz de usuario después de agregar el insumo
+      onInsumoAdded(productName, quantity, minQuantity);
+      Navigator.pop(context); // Cierra el formulario después de agregar el insumo
+    }).catchError((error) {
+      // Manejar errores de base de datos, si es necesario
+      _logger.e('Error al agregar el insumo: $error');
+      // Puedes mostrar un snackbar o un diálogo de error aquí
+    });
   }
 }

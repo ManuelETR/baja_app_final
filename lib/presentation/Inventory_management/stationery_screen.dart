@@ -8,12 +8,10 @@ import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
 
-
 class StationeryScreen extends StatefulWidget {
   const StationeryScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _StationeryScreenState createState() => _StationeryScreenState();
 }
 
@@ -21,7 +19,6 @@ class _StationeryScreenState extends State<StationeryScreen> {
   List<Insumo> _insumos = [];
   Set<String> _notifiedInsumoIds = <String>{}; // Conjunto para almacenar los IDs de los insumos notificados
   final Logger logger = Logger();
-
 
   @override
   void initState() {
@@ -54,13 +51,35 @@ class _StationeryScreenState extends State<StationeryScreen> {
   }
 
   void _decrementarCantidad(Insumo insumo) async {
-    await FirebaseService.decrementarCantidadInsumo('papeleria', insumo.id);
-    setState(() {
-      if (insumo.cantidad > 0) {
+    if (insumo.cantidad > 0) {
+      await FirebaseService.decrementarCantidadInsumo('papeleria', insumo.id);
+      setState(() {
         insumo.cantidad--;
-      }
-    });
-    _verificarCantidadMinima(insumo);
+      });
+      _verificarCantidadMinima(insumo);
+    } else {
+      _mostrarAlertaCantidadNoValida();
+    }
+  }
+
+  void _mostrarAlertaCantidadNoValida() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Cantidad no válida'),
+          content: const Text('La cantidad no puede ser menor a 0. El insumo está vacío.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _verificarCantidadMinima(Insumo insumo) async {
