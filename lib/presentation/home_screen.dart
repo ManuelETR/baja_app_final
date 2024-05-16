@@ -1,63 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
-
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  late Future<void> _documentCreationFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _documentCreationFuture = _createUserDocument();
-  }
-
-  Future<void> _createUserDocument() async {
-    final user = FirebaseAuth.instance.currentUser;
-    final userDoc = FirebaseFirestore.instance.collection('users').doc(user!.uid);
-    final docSnapshot = await userDoc.get();
-
-    if (!docSnapshot.exists) {
-      // El documento del usuario no existe, crearlo
-      await userDoc.set({
-        'email': user.email,
-        'name': '',
-        'lastName': '',
-        'bio': '',
-        'phone': '',
-        'address': '',
-        'website': '',
-        'imageUrl': '',
-      });
-    }
-  }
+class HomeScreen extends StatelessWidget {
+  // ignore: use_key_in_widget_constructors
+  const HomeScreen({Key? key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _MyAppBar(),
-      body: FutureBuilder(
-        future: _documentCreationFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Muestra un indicador de carga mientras se espera la creación del documento
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            // Maneja errores si ocurre alguno durante la creación del documento
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            // El documento ha sido creado exitosamente, muestra el contenido del HomeScreen
-            return _HomeView();
-          }
-        },
-      ),
+      body: _HomeView(),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.logout),
         onPressed: () {
@@ -93,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await googleSignIn.signOut();
               }
               // Redirigir a la pantalla de inicio de sesión
+              // ignore: use_build_context_synchronously
               Navigator.pushReplacementNamed(context, '/');
             }
           });
@@ -113,15 +67,15 @@ class _MyAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: const Color(0xFF053F93),
       title: const Row(
         children: [
-          Text(
-            'Baja App',
-            style: TextStyle(
-              fontFamily: 'Syne', // Usar la fuente Syne
-              color: Colors.white,
-              fontSize: 30,
-              fontWeight: FontWeight.bold, // Puedes ajustar el peso de la fuente según tus preferencias
+            Text(
+              'Baja App',
+              style: TextStyle(
+                fontFamily: 'Syne', // Usar la fuente Syne
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold, // Puedes ajustar el peso de la fuente según tus preferencias
+              ),
             ),
-          ),
           VerticalDivider(),
           Icon(Icons.table_chart_rounded, color: Colors.white, size: 35),
         ],
@@ -164,6 +118,7 @@ class _ButtonSection extends StatelessWidget {
             icon: Icons.notifications,
             text: 'Avisos',
             onPressed: () {
+              // Navegar a la pantalla de Avisos
               Navigator.pushNamed(context, '/notifications');
             },
           ),
@@ -171,6 +126,7 @@ class _ButtonSection extends StatelessWidget {
             icon: Icons.inventory_outlined,
             text: 'Gestión',
             onPressed: () {
+              // Navegar a la pantalla de Gestión
               Navigator.pushNamed(context, '/inventory');
             },
           ),
@@ -186,11 +142,11 @@ class CustomButton extends StatelessWidget {
   final String text;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.icon,
     required this.text,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

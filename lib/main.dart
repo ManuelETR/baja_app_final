@@ -2,7 +2,6 @@ import 'package:baja_app/config/theme/app_theme.dart';
 import 'package:baja_app/dominio/user.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'presentation/index.dart';
 
@@ -15,9 +14,10 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({Key? key});
+  MyApp({Key? key}) : super(key: key);
 
-  final _routes = {
+  final Map<String, WidgetBuilder> _routes = {
+    '/': (context) => const LoginPage(),
     '/sign': (context) => const SignUpPage(),
     '/home': (context) => const HomeScreen(),
     '/profile': (context) {
@@ -61,29 +61,10 @@ class MyApp extends StatelessWidget {
       theme: AppTheme(selectedColor: 0).theme(),
       initialRoute: '/',
       routes: _routes,
-      home: AuthWrapper(),
     );
   }
 
   static void onInsumoAdded(String id, int cantidad, int cantidadMinima) {
     // Lógica para manejar el nuevo insumo agregado
-  }
-}
-
-class AuthWrapper extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } else if (snapshot.hasData) {
-          return const HomeScreen();
-        } else {
-          return const LoginPage();
-        }
-      },
-    );
   }
 }

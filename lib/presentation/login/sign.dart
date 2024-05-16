@@ -4,6 +4,7 @@ import 'package:baja_app/widgets/login/form_container.dart';
 import 'package:baja_app/widgets/login/toast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key});
@@ -70,9 +71,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 height: 30,
               ),
               GestureDetector(
-                onTap: () {
-                  _signUp();
-                },
+                onTap: _signUp,
                 child: Container(
                   width: double.infinity,
                   height: 45,
@@ -130,17 +129,36 @@ class _SignUpPageState extends State<SignUpPage> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
-    User? user = await _auth.signUpWithEmailAndPassword(email, password);
+    try {
+      User? user = await _auth.signUpWithEmailAndPassword(email, password);
 
-    setState(() {
-      isSigningUp = false;
-    });
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'email': email,
+          'name': '',
+          'lastName': '',
+          'bio': '',
+          'phone': '',
+          'address': '',
+          'website': '',
+          'imageUrl': '',
+        });
 
-    if (user != null) {
-      showToast(message: "User is successfully created");
-      Navigator.pushNamed(context, "/login");
-    } else {
-      showToast(message: "Some error happend");
+        showToast(message: "Usuario creado con exito");
+        Navigator.pushReplacementNamed(context, "/");
+      } else {
+        showToast(message: "Some error happened");
+      }
+    } on FirebaseAuthException catch (e) {
+      showToast(message: "Authentication error: ${e.message}");
+    } on FirebaseException catch (e) {
+      showToast(message: "Firestore error: ${e.message}");
+    } catch (e) {
+      showToast(message: "An unknown error occurred: $e");
+    } finally {
+      setState(() {
+        isSigningUp = false;
+      });
     }
   }
 }
