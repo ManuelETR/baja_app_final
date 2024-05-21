@@ -55,7 +55,7 @@ class _InsumoSelectionScreenState extends State<InsumoSelectionScreen> {
         centerTitle: true,
         backgroundColor: const Color(0xFF053F93),
         title: const Text(
-          'Seleccionar Insumos',
+          'Generar un Pedido',
           style: TextStyle(fontSize: 23, color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
