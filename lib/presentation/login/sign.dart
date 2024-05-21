@@ -75,7 +75,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   width: double.infinity,
                   height: 45,
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: Color(0xFF053F93),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
@@ -109,7 +109,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       child: const Text(
                         "Inicia Sesión",
                         style: TextStyle(
-                            color: Colors.blue, fontWeight: FontWeight.bold),
+                            color: Color(0xFF053F93), fontWeight: FontWeight.bold),
                       ))
                 ],
               )

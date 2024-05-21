@@ -44,128 +44,133 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 200,
-                height: 200,
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/BBLogo.png'),
-                    fit: BoxFit.contain,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 50), // Añadir espacio para evitar que el teclado cubra contenido
+                Container(
+                  width: 280,
+                  height: 280,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/BBLogo.png'),
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                "Iniciar Sesión",
-                style: TextStyle(
-                  fontSize: 27,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 30),
-              FormContainerWidget(
-                controller: _emailController,
-                hintText: "Correo Electrónico",
-                isPasswordField: false,
-              ),
-              const SizedBox(height: 10),
-              FormContainerWidget(
-                controller: _passwordController,
-                hintText: "Contraseña",
-                isPasswordField: true,
-              ),
-              const SizedBox(height: 30),
-              GestureDetector(
-                onTap: _signIn,
-                child: Container(
-                  width: double.infinity,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 5),
+                const Text(
+                  "Iniciar Sesión",
+                  style: TextStyle(
+                    fontSize: 27,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 3, 48, 110),
                   ),
-                  child: Center(
-                    child: _isSigning
-                        ? const CircularProgressIndicator(
+                ),
+                const SizedBox(height: 30),
+                FormContainerWidget(
+                  controller: _emailController,
+                  hintText: "Correo Electrónico",
+                  isPasswordField: false,
+                ),
+                const SizedBox(height: 10),
+                FormContainerWidget(
+                  controller: _passwordController,
+                  hintText: "Contraseña",
+                  isPasswordField: true,
+                ),
+                const SizedBox(height: 30),
+                GestureDetector(
+                  onTap: _signIn,
+                  child: Container(
+                    width: double.infinity,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF053F93),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: _isSigning
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                          : const Text(
+                              "Acceder",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: _signInWithGoogle,
+                  child: Container(
+                    width: double.infinity,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            FontAwesomeIcons.google,
                             color: Colors.white,
-                          )
-                        : const Text(
-                            "Acceder",
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            "Acceder con Google",
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: _signInWithGoogle,
-                child: Container(
-                  width: double.infinity,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          FontAwesomeIcons.google,
-                          color: Colors.white,
-                        ),
-                        SizedBox(width: 5),
-                        Text(
-                          "Acceder con Google",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("¿No tienes una cuenta?"),
-                  const SizedBox(width: 5),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignUpPage(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                    child: const Text(
-                      "Regístrate",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("¿No tienes una cuenta?"),
+                    const SizedBox(width: 5),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignUpPage(),
+                          ),
+                          (route) => false,
+                        );
+                      },
+                      child: const Text(
+                        "Regístrate",
+                        style: TextStyle(
+                          color: Color(0xFF053F93),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20), // Añadir espacio para evitar el desbordamiento
+              ],
+            ),
           ),
         ),
       ),
