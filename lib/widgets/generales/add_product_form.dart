@@ -20,10 +20,8 @@ class AddProductForm extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_outlined),
-          // Cambiar el color de la flecha hacia atrás
-          color: Colors.white, // Cambia este color al que desees
+          color: Colors.white,
           onPressed: () {
-            // Agrega aquí la lógica para volver atrás si es necesario
             Navigator.of(context).pop();
           },
         ),
@@ -132,7 +130,8 @@ class AddProductForm extends StatelessWidget {
     FirebaseService.agregarInsumo(inventoryId, newInsumo).then((_) {
       // Actualizar la interfaz de usuario después de agregar el insumo
       onInsumoAdded(productName, quantity, minQuantity);
-      Navigator.pop(context); // Cierra el formulario después de agregar el insumo
+      Navigator.pop(context); // Cierra el diálogo de confirmación
+      Navigator.pop(context); // Cierra la pantalla de agregar insumo y regresa a la pantalla anterior
     }).catchError((error) {
       // Manejar errores de base de datos, si es necesario
       _logger.e('Error al agregar el insumo: $error');

@@ -3,6 +3,7 @@ import 'package:baja_app/dominio/notifications/snackbar_utils.dart';
 import 'package:baja_app/presentation/index.dart';
 import 'package:baja_app/services/firebase_service.dart';
 import 'package:baja_app/widgets/pedido/order_button.dart';
+import 'package:baja_app/widgets/pedido/order_button_entries.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,7 @@ class ProductionScreen extends StatefulWidget {
   const ProductionScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _ProductionScreenState createState() => _ProductionScreenState();
 }
 
@@ -118,11 +120,22 @@ class _ProductionScreenState extends State<ProductionScreen> {
           );
         },
       ),
-      floatingActionButton: OrderButton(
-        onPressed: () {
-          _navigateToInsumoSelectionScreen();
-        },
-      ),
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            OrderButton(
+              onPressed: () {
+                _navigateToInsumoSelectionScreenP();
+              },
+            ),
+            const SizedBox(height: 16), // Espacio entre los botones
+            OrderButtonEntries(
+              onPressed: () {
+                _navigateToInsumoSelectionScreenEntriesP();
+              },
+            ),
+          ],
+        ),
     );
   }
 
@@ -219,7 +232,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
     });
   }
 
-  void _navigateToInsumoSelectionScreen() async {
+  void _navigateToInsumoSelectionScreenP() async {
     final List<Insumo>? selectedInsumos = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -231,9 +244,28 @@ class _ProductionScreenState extends State<ProductionScreen> {
         ),
       ),
     );
-
+    
     if (selectedInsumos != null) {
       logger.d('Insumos seleccionados: $selectedInsumos');
     }
   }
+
+    void _navigateToInsumoSelectionScreenEntriesP() async {
+    final List<Insumo>? selectedInsumos = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => InsumoEntradaScreen(
+          insumos: _insumos,
+          updateParentScreen: () {
+            _loadInsumos('produccion');
+          },
+        ),
+      ),
+    );
+    
+    if (selectedInsumos != null) {
+      logger.d('Insumos seleccionados: $selectedInsumos');
+    }
+  }
+
 }

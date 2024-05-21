@@ -50,7 +50,7 @@ class _ButtonSection extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          CustomButton(
+          CustomButtonI(
             icon: Icons.precision_manufacturing_outlined,
             text: 'Producción',
             onPressed: () {
@@ -58,7 +58,7 @@ class _ButtonSection extends StatelessWidget {
               Navigator.pushNamed(context, '/production');
             },
           ),
-          CustomButton(
+          CustomButtonI(
             icon: Icons.design_services,
             text: 'Papelería',
             onPressed: () {
@@ -66,7 +66,7 @@ class _ButtonSection extends StatelessWidget {
               Navigator.pushNamed(context, '/stationery');
             },
           ),
-          CustomButton(
+          CustomButtonI(
             icon: Icons.cleaning_services_sharp,
             text: 'Limpieza',
             onPressed: () {
@@ -80,12 +80,12 @@ class _ButtonSection extends StatelessWidget {
   }
 }
 
-class CustomButton extends StatelessWidget {
+class CustomButtonI extends StatelessWidget {
   final VoidCallback? onPressed;
   final IconData icon;
   final String text;
 
-  const CustomButton({
+  const CustomButtonI({
     super.key,
     required this.icon,
     required this.text,

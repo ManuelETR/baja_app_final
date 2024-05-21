@@ -36,7 +36,9 @@ class MyApp extends StatelessWidget {
         return const LoginPage();
       }
     },
-    '/activity': (context) => const ActivityScreen(),
+    '/activity': (context) => const ActivityPage(),
+    '/activityEntries': (context) => const ActivityScreenEntries(),
+    '/activityOut': (context) => const ActivityScreen(),
     '/notifications': (context) => const NotificationsScreen(),
     '/inventory': (context) => const InventoryScreen(),
     '/production': (context) => const ProductionScreen(),
@@ -51,6 +53,7 @@ class MyApp extends StatelessWidget {
       );
     },
     '/order': (context) => InsumoSelectionScreen(insumos: const [], updateParentScreen: () {}),
+    '/entries': (context) => InsumoEntradaScreen(insumos: const [], updateParentScreen: () {}),
   };
 
   @override

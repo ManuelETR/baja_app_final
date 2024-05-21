@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:baja_app/dominio/pedidos/pedido_history.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({Key? key}) : super(key: key);
+  const ActivityScreen({super.key});
 
   @override
   _ActivityScreenState createState() => _ActivityScreenState();
@@ -19,8 +19,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   void _cargarPedidos() async {
     List<dynamic> pedidos = await PedidoHistory.getPedidos();
-    List<String> pedidosStrings =
-        pedidos.map((pedido) => pedido.toString()).toList();
+    List<String> pedidosStrings = pedidos.map((pedido) => pedido.toString()).toList();
     setState(() {
       _pedidos = pedidosStrings;
     });
@@ -60,6 +59,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Card(
+                    color: const Color(0xFFFFF9C4), // Color amarillo pastel para las notas
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
@@ -80,6 +80,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         const Divider(), // Línea separadora
                         ListView.builder(
                           shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: elementos.length,
                           itemBuilder: (context, subIndex) {
                             return Padding(

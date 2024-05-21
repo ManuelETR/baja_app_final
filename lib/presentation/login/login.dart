@@ -9,7 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -239,6 +239,7 @@ class _LoginPageState extends State<LoginPage> {
             await _auth.createUserProfile(user.uid, user.email!);
           }
 
+          // ignore: use_build_context_synchronously
           Navigator.pushReplacementNamed(context, "/home");
         }
       }

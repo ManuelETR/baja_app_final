@@ -1,5 +1,6 @@
 import 'package:baja_app/presentation/index.dart';
 import 'package:baja_app/widgets/pedido/order_button.dart';
+import 'package:baja_app/widgets/pedido/order_button_entries.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:baja_app/dominio/insumos.dart';
@@ -139,7 +140,7 @@ class _CleaningScreenState extends State<CleaningScreen> {
     });
   }
 
-  void _navigateToInsumoSelectionScreen() async {
+  void _navigateToInsumoSelectionScreenC() async {
     final List<Insumo>? selectedInsumos = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -152,6 +153,24 @@ class _CleaningScreenState extends State<CleaningScreen> {
       ),
     );
 
+    if (selectedInsumos != null) {
+      logger.d('Insumos seleccionados: $selectedInsumos');
+    }
+  }
+
+      void _navigateToInsumoSelectionScreenEntriesC() async {
+    final List<Insumo>? selectedInsumos = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => InsumoEntradaScreen(
+          insumos: _insumos,
+          updateParentScreen: () {
+            _loadInsumos('produccion');
+          },
+        ),
+      ),
+    );
+    
     if (selectedInsumos != null) {
       logger.d('Insumos seleccionados: $selectedInsumos');
     }
@@ -235,9 +254,22 @@ class _CleaningScreenState extends State<CleaningScreen> {
           );
         },
       ),
-      floatingActionButton: OrderButton(
-        onPressed: _navigateToInsumoSelectionScreen,
-      ),
+      floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            OrderButton(
+              onPressed: () {
+                _navigateToInsumoSelectionScreenC();
+              },
+            ),
+            const SizedBox(height: 16), // Espacio entre los botones
+            OrderButtonEntries(
+              onPressed: () {
+                _navigateToInsumoSelectionScreenEntriesC();
+              },
+            ),
+          ],
+        ),
     );
   }
 }
